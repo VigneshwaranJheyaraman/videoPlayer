@@ -1,0 +1,570 @@
+<html>
+
+<head>
+    <title>Video Streaming</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <style>
+        * {
+            transition: all 0.5s;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /*Video player*/
+        
+        .video-player {
+            --player-height: 450px;
+            --video-index: 1;
+            --extras-index: 3;
+            --overlaybtn-index: 2;
+            --thumbnail-index: 0;
+            border: 1px solid;
+            min-height: var(--player-height);
+            position: relative;
+        }
+        
+        .video-player:hover video {
+            filter: brightness(40%);
+        }
+        /*Video element*/
+        
+        .video-player video {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: var(--video-index);
+            top: 0;
+            left: 0;
+        }
+        /*Overlay component*/
+        
+        .overlay-btn {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: auto;
+            width: 100px;
+            height: 100px;
+            background-color: yellow;
+            text-align: center;
+        }
+        
+        .round-btn {
+            border-radius: 50%;
+        }
+        /*Overlay ends here*/
+        /*Play button before starting to play*/
+        
+        .play-btn {
+            display: none;
+            z-index: var(--overlaybtn-index);
+        }
+        
+        .play-btn:hover {
+            transform: translateY(-10px);
+            cursor: pointer;
+        }
+        
+        .play-btn::after {
+            box-sizing: border-box;
+            content: "";
+            width: 50px;
+            height: 50px;
+            top: 0;
+            left: 0;
+            margin: auto 30px;
+            border: 1px solid;
+            position: absolute;
+            border-width: 25px 0 25px 50px;
+            border-color: transparent transparent transparent white;
+            bottom: 0;
+            right: 0;
+        }
+        /*Video player controls and subtitle*/
+        
+        .video-player .extras *:hover {
+            cursor: pointer;
+        }
+        
+        .video-player .extras {
+            --sub-hg: 40px;
+            --bar-hg: 8px;
+            --control-hg: 30px;
+            --seeker-height: 10px;
+            --seeker-wd: 20px;
+            position: absolute;
+            width: 100%;
+            background-color: transparent;
+            height: calc(var(--sub-hg) + var(--bar-hg) + var(--control-hg));
+            bottom: 0;
+            left: 0;
+            z-index: var(--extras-index);
+        }
+        
+        .video-player .subtitle-zone {
+            height: var(--sub-hg);
+            position: relative;
+        }
+        
+        .video-player .subtitle-zone::after {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            content: "";
+            max-height: var(--sub-hg);
+            background-color: rgb(124, 124, 124);
+            opacity: 0.5;
+            font-size: 1rem;
+            z-index: -1;
+        }
+        
+        .video-player .subtitle {
+            text-align: center;
+            word-break: break-word;
+            word-wrap: break-word;
+            width: 70%;
+            margin: auto;
+        }
+        
+        .video-player .video-slider {
+            height: var(--bar-hg);
+            background-color: black;
+            position: relative;
+        }
+        
+        .video-player .video-slider .seeker {
+            position: absolute;
+            opacity: 0;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: auto 0;
+            width: 3px;
+            height: calc(var(--bar-hg) + 5px);
+            background-color: yellow;
+        }
+        
+        .video-player .video-slider .seeker:hover {
+            cursor: pointer;
+        }
+        
+        .video-player .video-slider:hover .seeker,
+        .video-player .video-slider .seeker:hover {
+            width: var(--seeker-wd);
+            height: calc(var(--bar-hg) + var(--seeker-height));
+            border-radius: 50%;
+            opacity: 1;
+        }
+        
+        .video-player .video-slider .progress {
+            width: 0;
+            background-color: green;
+            height: 100%;
+        }
+        
+        .video-player .controls {
+            max-height: var(--control-hg);
+            width: 100%;
+            height: 30px;
+            display: grid;
+            grid-template-columns: 1fr 0.15fr;
+        }
+        
+        .video-player .controls .video-controls {
+            display: flex;
+            justify-content: space-around;
+            width: 50%;
+            height: 100%;
+            align-items: center;
+        }
+        
+        .video-player .controls .control {
+            font-size: 1rem;
+            color: yellow;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            text-align: center;
+        }
+        
+        .video-player .controls .control .overlay-icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            bottom: 0;
+            width: 100%;
+            height: 50%;
+        }
+        
+        .video-player .controls .control:hover {
+            cursor: pointer;
+        }
+        
+        .video-player .controls .active-control {
+            --bord-wd: 3px;
+            border-bottom: var(--bord-wd) solid black;
+        }
+        /*Shows only video and hides all other components*/
+        
+        .show-video-only .extras {
+            height: calc(var(--sub-hg) + var(--bar-hg));
+        }
+        
+        .show-video-only .extras .controls {
+            display: none;
+        }
+        
+        .show-video-only:hover .extras {
+            height: calc(var(--sub-hg) + var(--bar-hg) + var(--control-hg));
+        }
+        
+        .show-video-only:hover .controls {
+            display: grid;
+        }
+        /*Player not starting to play component*/
+        
+        .not-started video {
+            display: none;
+        }
+        
+        .not-started .thumbnail {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            filter: brightness(60%) blur(2px);
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+        
+        .not-started .play-btn {
+            display: block;
+        }
+        
+        .not-started .extras {
+            /* display: none; */
+        }
+        /*Not playing css*/
+        
+        .not-playing .play-btn {
+            background-color: transparent;
+            color: white;
+            display: block;
+        }
+        
+        .not-playing video {
+            filter: brightness(30%);
+        }
+    </style>
+</head>
+
+<body>
+    <script src="./js/VideoPlayer.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        const videoURL = "http://192.168.1.2:9000/a1,2019,hd,tamil/a1,2019,hd,tamil.mp4";
+        const thumbnailURL = 'https://static.toiimg.com/photo/70224589.jpeg';
+
+        function VideoPlayeer(properties) {
+            /*
+            	Video Player function appends a Video player within the website
+            	@Param:
+            		1.rootEle:"the main root element under which the video player must be attached"
+            		2.retIt: "this will return the created video element if set to true by default is false"
+            		3.movieURL:"this is the url which will appended to the video element to view the video"
+            		4.thumbnail:"URL of thumbnail to display before user starts to play. Defauted to video.png"
+					5.subUrl:"url to extract the subtitle and add it to the movie"
+            		@@beta
+            */
+            var __videoPlayer = {
+                properties: {
+                    thumbnail: properties.thumbnail ? properties.thumbnail : '',
+                    videoLink: properties.movieURL,
+                    subtitle: properties.subURL,
+                    root: properties.rootEle ? `#${properties.rootEle}` : "body"
+                },
+                subtitle: {
+                    currentSub: "Hero:I love you Heroine I love you too. We must make this movie My father won't accept this marriage"
+                },
+                dom: {
+                    id: {
+                        progress: "videoProgress",
+                        buffered: "videobuffered",
+                        videoElem: "videoContent"
+                    },
+                    elem: {
+                        video: null,
+                        slider: null,
+                        progress: null,
+                        buffer: null,
+                        seeker: null,
+                        controls_collection: [],
+                    }
+                },
+                playerProps: {
+                    duration: 0,
+                    currentTime: 0,
+                    sliderWidth: 0
+                },
+                controls: {
+                    play: {
+                        class: "fa fa-play",
+                        click: function(elem) {
+                            __videoPlayer.dom.elem.video.paused && __videoPlayer.dom.elem.video.play();
+                            elem.classList.add("active-control");
+                        },
+                        name: "play"
+                    },
+                    pause: {
+                        class: "fa fa-pause",
+                        click: function(elem) {
+                            !__videoPlayer.dom.elem.video.paused && __videoPlayer.dom.elem.video.pause();
+                            elem.classList.add("active-control");
+                        },
+                        name: "pause"
+                    },
+                    stop: {
+                        class: "fa fa-stop",
+                        click: function(elem) {
+                            __videoPlayer.dom.elem.video.currentTime = __videoPlayer.dom.elem.video.duration;
+                            elem.classList.add("active-control");
+                            // __videoPlayer.dom.elem.video.ended = true;
+                        },
+                        name: "stop"
+                    },
+                    cc: {
+                        class: "fa fa-cc",
+                        click: function(elem) {},
+                        name: "cc"
+                    },
+                    download: {
+                        class: "fa fa-cloud-download",
+                        click: function(elem) {
+                            elem.classList.remove("active-control");
+                        },
+                        name: "download"
+                    }
+                }
+            };
+
+            function highLightControls(needToActivate) {
+                var active_control = document.querySelector(".active-control");
+                var isSameElement = active_control && active_control.dataset.optionDetails === needToActivate.dataset.optionDetails;
+                if (active_control) {
+                    active_control.classList.remove("active-control");
+                }
+                if (!isSameElement) {
+                    needToActivate.classList.add("active-control");
+                }
+            }
+
+            function createControlElement(control) {
+                var controlElem = document.createElement("div");
+                controlElem.setAttribute("class", "control");
+                controlElem.dataset.optionDetails = control.name;
+                var icon = document.createElement("i");
+                icon.setAttribute("class", control.class);
+                icon.classList.add("overlay-icon");
+                controlElem.onclick = function(event) {
+                    highLightControls(controlElem);
+                    control.click(controlElem);
+                };
+                controlElem.appendChild(icon);
+                return controlElem;
+            }
+
+            function initPlayer() {
+                //will insert the created dom inside
+                var rootElement = document.querySelector(__videoPlayer.properties.root);
+                rootElement.appendChild(initVideoPlayerDOM());
+            }
+
+            function startVideoPlaying() {
+                if (__videoPlayer.dom.elem.video) {
+                    __videoPlayer.dom.elem.video.src = __videoPlayer.properties.videoLink;
+                    __videoPlayer.dom.elem.controls_collection && __videoPlayer.dom.elem.controls_collection.forEach(control => {
+                        if (control.dataset.optionDetails === __videoPlayer.controls.play.name) {
+                            control.classList.add("active-control");
+                        }
+                    })
+                    __videoPlayer.dom.elem.video.play();
+                    __videoPlayer.dom.elem.video.addEventListener("loadeddata", function() {
+                        __videoPlayer.playerProps.duration = __videoPlayer.dom.elem.video.duration;
+                        __videoPlayer.playerProps.currentTime = __videoPlayer.dom.elem.video.currentTime;
+                        __videoPlayer.dom.elem.video.addEventListener('timeupdate', function(event) {
+                            updateSliderProgress();
+                        });
+                    });
+                }
+
+            }
+
+            function findOffset(elem) {
+                var box_offset = {
+                    top: 0,
+                    left: 0
+                };
+                if (elem.getBoundingClientRect) {
+                    box_offset = elem.getBoundingClientRect();
+                }
+                return {
+                    top: box_offset.top + window.pageYOffset - document.documentElement.clientTop,
+                    left: box_offset.left + window.pageXOffset - document.documentElement.clientLeft
+                };
+            }
+
+            function seekVideo(event) {
+                var {
+                    left,
+                    top
+                } = findOffset(__videoPlayer.dom.elem.slider)
+                var leftValue = event.pageX - left;
+                var totalWidth = __videoPlayer.dom.elem.slider.offsetWidth;
+                var drag_percent = leftValue / totalWidth;
+                var videoTime = __videoPlayer.playerProps.duration * drag_percent;
+                if (videoTime > 0) {
+                    __videoPlayer.dom.elem.video.currentTime = videoTime;
+                }
+            }
+
+            function updateSliderProgress() {
+                var slider_width = (__videoPlayer.dom.elem.video.currentTime / __videoPlayer.playerProps.duration) * 100;
+                __videoPlayer.dom.elem.progress.style.width = slider_width + "%";
+                __videoPlayer.dom.elem.seeker.style.left = slider_width + "%";
+            }
+
+            function initVideoPlayerDOM() {
+                var videoPlayer = document.createElement("div");
+                videoPlayer.setAttribute("class", 'video-player not-playing');
+                //video element created
+                var videoElemnt = document.createElement("video");
+                videoElemnt.setAttribute("type", "video/mp4");
+                videoElemnt.id = __videoPlayer.dom.id.videoElem;
+                __videoPlayer.dom.elem.video = videoElemnt;
+                videoElemnt.setAttribute("src", "#");
+                //overlay play btn element
+                var overlayPlayButton = document.createElement("div");
+                overlayPlayButton.setAttribute("class", "overlay-btn round-btn play-btn");
+                overlayPlayButton.onclick = function(event) {
+                        videoPlayer.classList.remove("not-playing");
+                        startVideoPlaying();
+                    }
+                    //thumbnail element
+                var thumbnail = document.createElement("div");
+                thumbnail.setAttribute("class", 'thumbnail');
+                thumbnail.style.backgroundImage = `url('${__videoPlayer.properties.thumbnail}')`;
+                //extras element
+                var extras = document.createElement("div");
+                extras.classList.add("extras");
+                //subtitle
+                var subtitleZone = document.createElement("div");
+                subtitleZone.setAttribute("class", "subtitle-zone");
+                var subtitle = document.createElement("div");
+                subtitle.setAttribute("class", 'subtitle');
+                subtitle.innerText = __videoPlayer.subtitle.currentSub;
+                subtitleZone.appendChild(subtitle);
+                //video slider/seeker
+                var videoSlider = document.createElement("div");
+                videoSlider.setAttribute("class", "video-slider");
+                __videoPlayer.playerProps.sliderWidth = videoSlider.offsetWidth;
+                __videoPlayer.dom.elem.slider = videoSlider;
+                //video slider components
+                var seeker = document.createElement("div");
+                seeker.setAttribute("class", "seeker");
+                seeker.setAttribute("draggable", "true");
+                __videoPlayer.dom.elem.seeker = seeker;
+                seeker.ondragstart = function(event) {
+                    //drag started
+                    console.log("drag started");
+                };
+                seeker.ondrag = function(event) {
+                    //dragging
+                    console.log("dragging");
+                    seekVideo(event);
+                };
+                seeker.ondragend = function(event) {
+                        //draggin ends
+                        console.log('drag ends');
+                        updateSliderProgress();
+                    }
+                    //progress element
+                var progress = document.createElement("div");
+                progress.setAttribute("class", "progress");
+                progress.setAttribute("id", __videoPlayer.dom.id.progress);
+                __videoPlayer.dom.elem.progress = progress;
+                //buffered element;
+                var buffered_content = document.createElement("div");
+                buffered_content.setAttribute("class", "buffered");
+                buffered_content.setAttribute("id", __videoPlayer.dom.id.buffered);
+                __videoPlayer.dom.elem.buffer = buffered_content;
+                //adding video_slider elements
+                videoSlider.appendChild(seeker);
+                videoSlider.appendChild(progress);
+                videoSlider.appendChild(buffered_content);
+                //controls element
+                var video_controls_container = document.createElement("div");
+                video_controls_container.setAttribute("class", "controls");
+                //video_controls
+                var video_controls = document.createElement("div");
+                video_controls.setAttribute("class", "video-controls");
+                Object.values(__videoPlayer.controls).forEach((control, index) => {
+                    if (index !== Object.keys(__videoPlayer.controls).length - 1) {
+                        var control_elem = createControlElement(control);
+                        __videoPlayer.dom.elem.controls_collection.push(control_elem);
+                        video_controls.appendChild(control_elem);
+                    }
+                });
+                //download_controls
+                var download_control = createControlElement(__videoPlayer.controls.download);
+                video_controls_container.appendChild(video_controls);
+                __videoPlayer.dom.elem.controls_collection.push(download_control);
+                video_controls_container.appendChild(download_control);
+                //extras adding
+                extras.appendChild(subtitleZone);
+                extras.appendChild(videoSlider);
+                extras.appendChild(video_controls_container);
+                //adding elements
+                videoPlayer.appendChild(videoElemnt);
+                videoPlayer.appendChild(overlayPlayButton);
+                videoPlayer.appendChild(thumbnail);
+                videoPlayer.appendChild(extras);
+                return videoPlayer;
+            }
+
+            initPlayer();
+
+        }
+
+        // var video = document.getElementById("movie");
+        var video = VideoPlayer({
+                thumb: thumbnailURL,
+                movieURL: videoURL,
+            })
+            // console.log(video.buffered);
+            // video.addEventListener("progress", function() {
+            //     var duration = video.duration;
+            //     var bufferedEnd = video.buffered.length > 2 ? video.buffered.end(video.buffered.length - 2) : video.buffered.end(0);
+            //     if (duration > 0) {
+            //         console.info("Started at " + video.buffered.start(video.buffered.length - 1));
+            //         console.info("Buffered till " + bufferedEnd);
+            //         console.info("Percentage " + (bufferedEnd / duration) * 100);
+            //     }
+            // });
+    </script>
+</body>
+
+</html>
