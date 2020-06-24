@@ -16,6 +16,8 @@
     height: calc(var(--sub-hg) + var(--bar-hg) + var(--control-hg));
     bottom: 0;
     left: 0;
+    background-color: rgb(124, 124, 124);
+    overflow: hidden;
     z-index: var(--extras-index);
 }
 
@@ -32,8 +34,6 @@
     left: 0;
     content: "";
     max-height: var(--sub-hg);
-    background-color: rgb(124, 124, 124);
-    opacity: 0.5;
     font-size: 1rem;
     z-index: -1;
 }
@@ -42,8 +42,10 @@
     text-align: center;
     word-break: break-word;
     word-wrap: break-word;
-    width: 70%;
-    margin: auto;
+    width: 100%;
+    text-align: center;
+    height: 100%;
+    user-select: none;
 }
 
 .video-player .video-slider {
@@ -54,14 +56,14 @@
 
 .video-player .video-slider .seeker {
     position: absolute;
-    opacity: 0;
+    opacity: 1;
     top: 0;
     left: 0;
     bottom: 0;
     right: 0;
     margin: auto 0;
     width: 3px;
-    height: calc(var(--bar-hg) + 5px);
+    height: calc(var(--bar-hg));
     background-color: yellow;
 }
 

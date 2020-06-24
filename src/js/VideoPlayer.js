@@ -58,6 +58,7 @@
                     toggle: false,
                     click: () => {
                         __videoPlayer.mediaController && __videoPlayer.mediaController.play();
+                        toggleOverlayPlayBtn(false);
                     },
                     class: "fa-play"
                 },

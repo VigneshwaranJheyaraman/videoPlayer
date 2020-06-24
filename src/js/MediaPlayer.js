@@ -7,10 +7,9 @@
         rootEl = rootEl ? rootEl : document.querySelector("body");
         var sliderWidth = slider.offsetWidth;
         var video_offset = getElementOffset(video);
-        var currentLeft = 0;
-
-        updateProgress(currentLeft, false);
-        updateSeeker(currentLeft, false);
+        var lastTime = 0,
+            lastLeft = 0,
+            isSliderHovering = false;
 
         function getElementOffset(element) {
             var offset = { left: 0, top: 0 };
@@ -25,22 +24,38 @@
 
         function updateCurrentTime(event) {
             var leftGapForElement = event.pageX - video_offset.left;
+            updateLastSliderPosition(leftGapForElement);
             var dragPercent = (leftGapForElement / sliderWidth);
             var videoCurrentTime = video.duration * dragPercent;
-            if (videoCurrentTime <= video.duration) {
-                video.currentTime = videoCurrentTime;
+            lastTime = videoCurrentTime;
+        }
+
+        function updateVideoTime(newTime) {
+            if (newTime < video.duration) {
+                video.currentTime = newTime;
             } else {
-                video.currentTime = video.duration;
+                if (video.duration) {
+                    video.currentTime = video.duration;
+                }
             }
-            currentLeft = leftGapForElement;
+        }
+
+        function updateLastSliderPosition(pos) {
+            if (pos < sliderWidth) {
+                lastLeft = pos;
+            } else {
+                lastLeft = sliderWidth;
+            }
         }
 
         function calculateCurrentWidthBasedOnPlayTime() {
-            return (video.currentTime / video.duration) * 100;
+            return (lastTime / video.duration) * 100;
         }
 
         function updateSeeker(width, inPercent = true) {
-            seeker.style.left = `calc(${width}${inPercent ? '%' : 'px'} - (var(--seeker-wd)/2))`;
+            if (width || width === 0) {
+                seeker.style.left = isSliderHovering ? `calc(${width}${inPercent ? '%' : 'px'} - (var(--seeker-wd)/2))` : `${width}${inPercent ? '%' : 'px'}`;
+            }
         }
 
         mediaController.togglePlaying = function() {
@@ -51,18 +66,28 @@
             }
         }
 
+        function replayMedia() {
+            updateLastSliderPosition(0);
+            lastTime = 0;
+            updateSeekerAndProgress();
+            video.play();
+        }
+
         function updateProgress(width, inPercent = true) {
             progress.style.width = `${width}${inPercent ? '%' : 'px'}`;
         }
 
         function updateSeekerAndProgress() {
-            var currentWidth = calculateCurrentWidthBasedOnPlayTime();
-            updateSeeker(currentWidth);
-            updateProgress(currentWidth);
+            updateSeeker(lastLeft, false);
+            updateProgress(lastLeft, false);
         }
         mediaController.play = function() {
-            video.play();
-            updateSeekerAndProgress();
+            if (lastTime === video.duration) {
+                replayMedia();
+            } else {
+                video.play();
+                updateSeekerAndProgress();
+            }
         }
         mediaController.pause = function() {
             video.pause();
@@ -72,6 +97,8 @@
         }
         mediaController.stop = function() {
             video.currentTime = video.duration;
+            lastTime = video.currentTime;
+            updateLastSliderPosition(sliderWidth);
             updateSeekerAndProgress();
         }
         mediaController.updateSliderWidth = function(newWidth) {
@@ -84,26 +111,31 @@
             if (event.target.classList.contains("seeker")) {
                 mediaSeeking = true;
             }
-        })
-        slider.addEventListener("mousemove", function(event) {
+        });
+        rootEl.addEventListener("mousemove", function(event) {
             if (mediaSeeking) {
                 updateCurrentTime(event);
                 updateSeekerAndProgress();
             }
         });
+        slider.addEventListener("mouseover", function() {
+            isSliderHovering = true;
+        });
+        slider.addEventListener("mouseout", function() {
+            isSliderHovering = false;
+        });
         slider.addEventListener("click", function(event) {
             updateCurrentTime(event);
+            updateVideoTime(lastTime);
             updateSeekerAndProgress();
-        });
-        rootEl.addEventListener("mouseup", function(event) {
-            mediaSeeking = false;
         });
         rootEl.addEventListener("mouseup", function(event) {
             if (mediaSeeking) {
                 mediaSeeking = false;
+                updateVideoTime(lastTime);
                 updateSeekerAndProgress();
             }
-        })
+        });
         return mediaController;
     };
 
