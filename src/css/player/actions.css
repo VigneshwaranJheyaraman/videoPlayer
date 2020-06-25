@@ -1,0 +1,20 @@
+.video-player:hover .video {
+    --dullify: 50%;
+    filter: brightness(var(--dullify));
+}
+
+.video-player:hover .play-pause-btn::after {
+    opacity: 1;
+}
+
+.video-player:hover .features .extras {
+    min-height: var(--extras-hg);
+}
+
+.video-player:hover .features .extras .slider {
+    height: var(--slider-hg);
+}
+
+.video-player:hover .features .extras .slider #seeker {
+    height: var(--seeker-hg);
+}

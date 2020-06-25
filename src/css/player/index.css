@@ -1,0 +1,8 @@
+@import "./base.css";
+@import "./player.css";
+@import "./actions.css";
+.video-player,
+.video-player * {
+    --trans-time: 0.2s;
+    transition: all var(--trans-time) linear;
+}
