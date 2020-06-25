@@ -6,3 +6,15 @@
     bottom: 0;
     margin: auto;
 }
+
+.video-player .grid {
+    display: grid;
+}
+
+.video-player .icon {
+    --icon-size: 35px;
+    width: var(--icon-size);
+    height: auto;
+    margin: auto;
+    cursor: pointer;
+}
