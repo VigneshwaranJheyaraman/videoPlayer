@@ -108,12 +108,16 @@
     height: 100%;
 }
 
+.video-player .features .extras .slider .progress-bar {
+    width: 100%;
+}
+
 .video-player .features .extras .slider .progress-bar #progress {
     background-color: lightgrey;
     z-index: var(--prog-zind);
 }
 
-.video-player .features .extras .slider #buffer {
+.video-player .features .extras .slider .progress-bar #buffer {
     background-color: lightcoral;
     z-index: var(--buffer-zind);
 }

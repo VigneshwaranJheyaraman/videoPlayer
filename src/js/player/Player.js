@@ -75,18 +75,36 @@ class Player {
 
     //enable full screen listener and remove all listeners
     static enableFullScreenListener() {
-        document.addEventListener("fullscreenchange", this.__toggleFullScreen);
-        document.addEventListener("webkitfullscreenchange", this.__toggleFullScreen);
-        document.addEventListener("msfullscreenchange", this.__toggleFullScreen);
-        document.addEventListener("mozfullscreenchange", this.__toggleFullScreen);
-        window.addEventListener("unload", this.unsubscribe);
+        document.addEventListener("fullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
+        document.addEventListener("webkitfullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
+        document.addEventListener("msfullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
+        document.addEventListener("mozfullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
+        window.addEventListener("unload", (e) => {
+            this.unsubscribe();
+        });
     }
 
     __removeAllFullScreenListener() {
-        document.removeEventListener("fullscreenchange", this.__toggleFullScreen);
-        document.removeEventListener("webkitfullscreenchange", this.__toggleFullScreen);
-        document.removeEventListener("msfullscreenchange", this.__toggleFullScreen);
-        document.removeEventListener("mozfullscreenchange", this.__toggleFullScreen);
+        document.removeEventListener("fullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
+        document.removeEventListener("webkitfullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
+        document.removeEventListener("msfullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
+        document.removeEventListener("mozfullscreenchange", (e) => {
+            this.__toggleFullScreen();
+        });
     }
 
     //update container height --DOM
@@ -103,5 +121,12 @@ class Player {
 
     subscribe() {
         Player.enableFullScreenListener();
+    }
+
+    static returnThisBoundedFunction(func, anyParams = undefined) {
+        var parms = anyParams ? anyParams : undefined;
+        return (parms) => {
+            func();
+        }
     }
 }

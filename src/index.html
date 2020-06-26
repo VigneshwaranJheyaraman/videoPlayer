@@ -23,15 +23,17 @@
                     <div class="progress-bar">
                         <div id="progress"></div>
                     </div>
-                    <div id="buffer"></div>
+                    <div class="progress-bar">
+                        <div id="buffer"></div>
+                    </div>
                 </div>
                 <div class="grid controls">
                     <div class="grid vid-ctrl">
-                        <i class="icon fa fa-play"></i>
-                        <i class="icon fa fa-pause"></i>
-                        <i class="icon fa fa-stop"></i>
-                        <i class="icon fa fa-backward"></i>
-                        <i class="icon fa fa-forward"></i>
+                        <i class="icon fa fa-play" id="playBtn"></i>
+                        <i class="icon fa fa-pause" id="pauseBtn"></i>
+                        <i class="icon fa fa-stop" id="stopBtn"></i>
+                        <i class="icon fa fa-backward" id="bwBtn"></i>
+                        <i class="icon fa fa-forward" id="fwBtn"></i>
                     </div>
                 </div>
             </div>
@@ -39,6 +41,7 @@
     </figure>
     <script src="js/player/PlayerComponent.js"></script>
     <script src="js/player/Player.js"></script>
+    <script src="js/player/MediaController.js"></script>
     <script src="js/player/VrajPlayer.js"></script>
     <script src="js/index.js"></script>
 </body>
