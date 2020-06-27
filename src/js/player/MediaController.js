@@ -14,6 +14,21 @@ class MediaController {
         this.__constPlayBack = 1.0;
         this.__skipOffset = 10 * 1e3;
         this.__progressCB = props.progressCB ? props.progressCB : null;
+        this.__startedSeeking = false;
+        this.__updatePositionOffset = this.__updatePositionOffset.bind(this);
+        this.__calculateDragProgress = this.__calculateDragProgress.bind(this);
+        this.__didCompletedWatching = this.__didCompletedWatching.bind(this);
+        this.play = this.play.bind(this);
+        this.pause = this.pause.bind(this);
+        this.stop = this.stop.bind(this);
+        this.fastFwd = this.fastFwd.bind(this);
+        this.fastBwd = this.fastBwd.bind(this);
+        this.seek = this.seek.bind(this);
+        this.skipFwd = this.skipFwd.bind(this);
+        this.skipBwd = this.skipBwd.bind(this);
+        this.__initializeVideoPlaybackEvents = this.__initializeVideoPlaybackEvents.bind(this);
+        this.__unsubscribe = this.__unsubscribe.bind(this);
+        this.__updateProgress = this.__updateProgress.bind(this);
         this.__updatePositionOffset();
         this.__initializeVideoPlaybackEvents();
     }
@@ -22,7 +37,6 @@ class MediaController {
         return this.__updateProgressPercent + "%";
     }
     set progressPercent(updateProgress) {
-        console.log(updateProgress);
         if (updateProgress < 100) {
             this.__updateProgressPercent = updateProgress;
         } else if (updateProgress <= 0) {
@@ -53,7 +67,6 @@ class MediaController {
         return this.__lastProgressPixel + "px";
     }
     set progressPixel(newPixel) {
-        console.log(newPixel);
         if (newPixel < this.__sliderWidth) {
             this.__lastProgressPixel = newPixel;
         } else if (newPixel <= 0) {
@@ -77,6 +90,20 @@ class MediaController {
         this.__progressCB = newCB;
     }
 
+    get isSeeking() {
+        return this.__startedSeeking;
+    }
+    set isSeeking(newSeek) {
+        this.__startedSeeking = newSeek;
+    }
+
+    get completedWatching() {
+        return this.__watched;
+    }
+    set completedWatching(completed) {
+        this.__watched = completed;
+    }
+
     __updatePositionOffset() {
         this.__positionOffset.left += window.pageXOffset + document.documentElement.clientLeft;
         this.__positionOffset.top += window.pageYOffset + document.documentElement.clientTop;
@@ -88,7 +115,7 @@ class MediaController {
         var progressPercent = (progressPixel / this.__sliderWidth) * 100;
         this.progressPixel = progressPixel;
         this.progressPercent = progressPercent;
-        this.lastTime = !lastTime ? this.duration * progressPercent : lastTime;
+        this.lastTime = !lastTime ? this.duration * (progressPercent / 100) : lastTime;
         this.progressCB && this.progressCB();
     }
 
@@ -101,16 +128,16 @@ class MediaController {
 
     __didCompletedWatching() {
         if (this.lastTime === this.duration) {
-            this.__watched = true;
+            this.completedWatching = true;
         }
     }
 
     play() {
-        if (this.__watched) {
+        if (this.completedWatching) {
             this.lastTime = 0;
             this.progressPercent = 0;
             this.progressPixel = 0;
-            this.__watched = false;
+            this.completedWatching = false;
             this.progressCB && this.progressCB();
         }
         this.__videoElement.play();
@@ -150,9 +177,12 @@ class MediaController {
     }
 
     seek(e) {
-        e = e || window.event;
-        this.__calculateDragProgress(e);
-        this.__videoElement.currentTime = this.lastTime;
+        if (this.isSeeking) {
+            e = e || window.event;
+            this.__calculateDragProgress(e);
+            this.__videoElement.currentTime = this.lastTime;
+            this.play();
+        }
     }
 
     skipFwd(e) {
@@ -164,24 +194,18 @@ class MediaController {
     }
 
     __initializeVideoPlaybackEvents() {
-        this.__videoElement.addEventListener("timeupdate", (e) => {
-            if (this.isPlaying) {
-                this.__calculateProgress();
-            }
-        });
-        window.addEventListener("unload", (e) => {
-            this.__unsubscribe();
-        });
+        this.__videoElement.addEventListener("timeupdate", this.__updateProgress);
+        window.addEventListener("unload", this.__unsubscribe);
+    }
+
+    __updateProgress() {
+        if (this.isPlaying && !this.isSeeking) {
+            this.__calculateProgress();
+        }
     }
 
     __unsubscribe() {
-        window.removeEventListener("load", () => {
-            this.__initializeVideoPlaybackEvents();
-        });
-        this.__videoElement.removeEventListener("timeupdate", () => {
-            if (this.isPlaying) {
-                this.__calculateProgress();
-            }
-        });
+        window.removeEventListener("load", this.__initializeVideoPlaybackEvents);
+        this.__videoElement.removeEventListener("timeupdate", this.__updateProgress);
     }
 }

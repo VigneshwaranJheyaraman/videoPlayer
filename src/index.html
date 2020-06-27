@@ -12,7 +12,11 @@
         <video id="videoScreen" type="video/mp4" controls preload="metadata" class="video">
               <source src="#"></source>
         </video>
-        <section class="overlay-btn play-pause-btn"></section>
+        <section class="overlay-btn play-pause-btn">
+            <i class="fa fa-play"></i>
+            <i class="fa fa-pause"></i>
+            <i class="fa fa-repeat"></i>
+        </section>
         <section class="features">
             <div class="subs">Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penneOmmane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane
                 Penne omanna penneOmmane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penneOmmane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne omanna penne,Ommane Penne
@@ -34,12 +38,16 @@
                         <i class="icon fa fa-stop" id="stopBtn"></i>
                         <i class="icon fa fa-backward" id="bwBtn"></i>
                         <i class="icon fa fa-forward" id="fwBtn"></i>
+                        <i class="icon fa fa-download" id="downloadBtn"></i>
                     </div>
+                    <i class="icon fa fa-expand" id="fullScreen"></i>
                 </div>
             </div>
         </section>
     </figure>
     <script src="js/player/PlayerComponent.js"></script>
+    <script src="js/player/SubtitleExtractor.js"></script>
+    <script src="js/player/SubtitleSynchronizer.js"></script>
     <script src="js/player/Player.js"></script>
     <script src="js/player/MediaController.js"></script>
     <script src="js/player/VrajPlayer.js"></script>

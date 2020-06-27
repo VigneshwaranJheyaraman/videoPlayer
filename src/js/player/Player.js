@@ -7,6 +7,19 @@ class Player {
         this.__canGoFullScreen = this.__fullScreenAvailable();
         this.__fullScreenIsEnabled = this.__fullScreenEnabled();
         this.__updateContainerHeight(this.__playerMinHeight);
+        this.booleanize = this.booleanize.bind(this);
+        this.__checkVideoPlayable = this.__checkVideoPlayable.bind(this);
+        this.__fullScreenAvailable = this.__fullScreenAvailable.bind(this);
+        this.__fullScreenEnabled = this.__fullScreenEnabled.bind(this);
+        this.__enableFullScreenListener = this.__enableFullScreenListener.bind(this);
+        this.__removeAllFullScreenListener = this.__removeAllFullScreenListener.bind(this);
+        this.__goFullScreen = this.__goFullScreen.bind(this);
+        this.__exitFullScreen = this.__exitFullScreen.bind(this);
+        this.toggleFullScreen = this.toggleFullScreen.bind(this);
+        this.__updateFullScreenState = this.__updateFullScreenState.bind(this);
+        this.__updateContainerHeight = this.__updateContainerHeight.bind(this);
+        this.subscribe = this.subscribe.bind(this);
+        this.unsubscribe = this.unsubscribe.bind(this);
         window.addEventListener("load", this.subscribe);
     }
 
@@ -48,63 +61,56 @@ class Player {
     }
 
     //go ,exit and toggle full screen
-    goFullScreen() {
+    __goFullScreen() {
         this.isFullScreen = this.__fullScreenEnabled();
         if (this.__playerContainer && !this.isFullScreen) {
-            this.isFullScreen = true;
-            this.__playerContainer.setAttribute("data-fullscreen", this.isFullScreen);
+            if (this.__playerContainer.requestFullscreen) this.__playerContainer.requestFullscreen();
+            else if (this.__playerContainer.mozRequestFullScreen) this.__playerContainer.mozRequestFullScreen();
+            else if (this.__playerContainer.webkitRequestFullScreen) this.__playerContainer.webkitRequestFullScreen();
+            else if (this.__playerContainer.msRequestFullscreen) this.__playerContainer.msRequestFullscreen();
+            this.__updateFullScreenState();
         }
     }
 
-    exitFullScreen() {
+    __exitFullScreen() {
         this.isFullScreen = this.__fullScreenEnabled();
-        if (this.__playerContainer && this.isFullScreen) {
-            this.isFullScreen = false;
-            this.__playerContainer.setAttribute("data-fullscreen", this.isFullScreen);
+        if (document && this.isFullScreen) {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+            else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
+            this.__updateFullScreenState();
         }
     }
 
-    __toggleFullScreen() {
+    toggleFullScreen() {
         this.isFullScreen = this.__fullScreenEnabled();
-        if (this.isFullScreen) {
-            this.goFullScreen();
+        if (!this.isFullScreen) {
+            this.__goFullScreen();
         } else {
-            this.exitFullScreen();
+            this.__exitFullScreen();
         }
+    }
+
+    __updateFullScreenState() {
+        this.isFullScreen = this.__fullScreenEnabled();
+        this.__playerContainer.setAttribute("data-fullscreen", this.isFullScreen);
     }
 
     //enable full screen listener and remove all listeners
-    static enableFullScreenListener() {
-        document.addEventListener("fullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
-        document.addEventListener("webkitfullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
-        document.addEventListener("msfullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
-        document.addEventListener("mozfullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
-        window.addEventListener("unload", (e) => {
-            this.unsubscribe();
-        });
+    __enableFullScreenListener() {
+        document.addEventListener("fullscreenchange", this.__updateFullScreenState);
+        document.addEventListener("webkitfullscreenchange", this.__updateFullScreenState);
+        document.addEventListener("msfullscreenchange", this.__updateFullScreenState);
+        document.addEventListener("mozfullscreenchange", this.__updateFullScreenState);
+        window.addEventListener("unload", this.unsubscribe);
     }
 
     __removeAllFullScreenListener() {
-        document.removeEventListener("fullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
-        document.removeEventListener("webkitfullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
-        document.removeEventListener("msfullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
-        document.removeEventListener("mozfullscreenchange", (e) => {
-            this.__toggleFullScreen();
-        });
+        document.removeEventListener("fullscreenchange", this.__updateFullScreenState);
+        document.removeEventListener("webkitfullscreenchange", this.__updateFullScreenState);
+        document.removeEventListener("msfullscreenchange", this.__updateFullScreenState);
+        document.removeEventListener("mozfullscreenchange", this.__updateFullScreenState);
     }
 
     //update container height --DOM
@@ -120,13 +126,6 @@ class Player {
     }
 
     subscribe() {
-        Player.enableFullScreenListener();
-    }
-
-    static returnThisBoundedFunction(func, anyParams = undefined) {
-        var parms = anyParams ? anyParams : undefined;
-        return (parms) => {
-            func();
-        }
+        this.__enableFullScreenListener();
     }
 }
