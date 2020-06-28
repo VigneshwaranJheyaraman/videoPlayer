@@ -21,6 +21,9 @@ class VrajPlayer extends Player {
             pause: properties.overlay.querySelector(".fa-pause"),
             repeat: properties.overlay.querySelector('.fa-repeat')
         };
+        this.__subtitleEnabled = false;
+        this.__subtitleHandler = new SubtitleExtractor({ url: properties.subtitleURL ? properties.subtitleURL : null });
+
         this.__updateVideoSource = this.__updateVideoSource.bind(this);
         this.__intializeVideoElementProperties = this.__intializeVideoElementProperties.bind(this);
         this.__initializeMediaController = this.__initializeMediaController.bind(this);
@@ -142,6 +145,8 @@ class VrajPlayer extends Player {
         this.__overlayControls.pause.addEventListener("click", this.pause);
         this.__overlayControls.repeat.addEventListener("click", this.play);
         this.__controls.fullScreen.addEventListener("click", this.toggleFullScreen);
+        window.addEventListener("blur", this.pause);
+        window.addEventListener("focus", this.play);
     }
 
     __startDragging() {
@@ -166,5 +171,7 @@ class VrajPlayer extends Player {
         this.__overlayControls.pause.removeEventListener("click", this.pause);
         this.__overlayControls.repeat.removeEventListener("click", this.play);
         this.__controls.fullScreen.removeEventListener("click", this.toggleFullScreen);
+        window.removeEventListener("blur", this.pause);
+        window.removeEventListener("focus", this.play);
     }
 }

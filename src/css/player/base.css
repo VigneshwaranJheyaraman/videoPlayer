@@ -9,6 +9,7 @@
 }
 
 .video-player .grid {
+    display: -ms-grid;
     display: grid;
 }
 

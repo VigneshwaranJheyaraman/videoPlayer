@@ -9,9 +9,11 @@ class SubtitleSynchronizer {
         this.__synchronizing = false;
         this.__synchronizingIntervalHandler = null;
         this.__stopped = false;
+        this.__subtitleUICallback = null;
 
         this.initSync = this.initSync.bind(this);
         this.sync = this.sync.bind(this);
+        this.pauseSync = this.pauseSync.bind(this);
         this.stopSync = this.stopSync.bind(this);
         this.__clearSync = this.__clearSync.bind(this);
         this.__updateCurrentSubtitle = this.__updateCurrentSubtitle.bind(this);
@@ -25,6 +27,13 @@ class SubtitleSynchronizer {
         return this.__currentSec + (this.__milliSecCount / 1000);
     }
 
+    get subtitleUICallback() {
+        return this.__subtitleUICallback;
+    }
+    set subtitleUICallback(domUpdates) {
+        this.__subtitleUICallback = domUpdates;
+    }
+
     initSync() {
         this.__synchronizingIntervalHandler = this.__initializeSynchronizer();
     }
@@ -36,8 +45,13 @@ class SubtitleSynchronizer {
         this.__synchronizing = true;
     }
 
+    pauseSync() {
+        this.__synchronizing = false;
+    }
+
     stopSync() {
         this.__stopped = true;
+        this.__synchronizing = false;
     }
 
     __runTimer() {
@@ -66,6 +80,7 @@ class SubtitleSynchronizer {
             if ((currentTime - key) < 1 && (currentTime - key) >= 0) {
                 if (currentTime < this.__dictionary[key].to) {
                     this.__currentSubtitle = this.__dictionary[key].subtitle;
+                    this.subtitleUICallback && this.subtitleUICallback();
                 }
                 return;
             }

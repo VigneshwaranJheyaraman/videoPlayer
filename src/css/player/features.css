@@ -1,0 +1,124 @@
+.video-player .features {
+    --feature-min-hg: var(--extras-hg);
+    --feature-mini-min-hg: var(--extras-minmized);
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color: transparent;
+    min-height: var(--feature-min-hg);
+    height: auto;
+    overflow: hidden;
+    color: white;
+}
+
+.video-player .features .extras {
+    --slider-hg: 10px;
+    --slider-mini-hg: 5px;
+    --controls-hg: 40px;
+    --extras-hg: calc(var(--slider-hg) + var(--controls-hg));
+    --extras-minmized: var(--slider-mini-hg);
+    width: 100%;
+    height: var(--extras-minmized);
+}
+
+.video-player .features .subs {
+    --subs-op: 0.8;
+    width: 80%;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    margin: auto;
+    opacity: var(--subs-op);
+    word-break: break-all;
+    word-wrap: break-word;
+    background-color: rgba(124, 124, 124);
+    border-radius: 5px;
+    text-align: justify;
+}
+
+.video-player .features .extras * {
+    position: relative;
+}
+
+.video-player .features .extras .slider {
+    --seeker-zind: 3;
+    --prog-zind: 2;
+    --buffer-zind: 1;
+    width: 100%;
+    height: var(--slider-mini-hg);
+    background-color: black;
+}
+
+.video-player .features .extras .slider #seeker {
+    --seeker-width: 5px;
+    --seeker-mini-hg: var(--slider-mini-hg);
+    --seeker-hg: var(--slider-hg);
+    --seeker-round-width: 10px;
+    z-index: var(--seeker-zind);
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    width: var(--seeker-width);
+    height: var(--seeker-mini-hg);
+    background-color: orange;
+}
+
+.video-player .features .extras .slider * {
+    width: 0%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+}
+
+.video-player .features .extras .slider .progress-bar {
+    width: 100%;
+}
+
+.video-player .features .extras .slider .progress-bar #progress {
+    background-color: lightgrey;
+    z-index: var(--prog-zind);
+}
+
+.video-player .features .extras .slider .progress-bar #buffer {
+    background-color: lightcoral;
+    z-index: var(--buffer-zind);
+}
+
+.video-player .features .extras .controls {
+    -ms-grid-rows: 1fr;
+    grid-template-rows: 1fr;
+    -ms-grid-columns: 1fr 0.25fr;
+    grid-template-columns: 1fr 0.25fr;
+    height: var(--controls-hg);
+    color: lightslategray;
+}
+
+.video-player .features .extras .controls>*:nth-child(1) {
+    -ms-grid-row: 1;
+    -ms-grid-column: 1;
+}
+
+.video-player .features .extras .controls>*:nth-child(2) {
+    -ms-grid-row: 1;
+    -ms-grid-column: 2;
+}
+
+.video-player .features .extras .controls .vid-ctrl {
+    -ms-grid-rows: 1fr;
+    grid-template-rows: 1fr;
+    grid-auto-flow: column;
+    grid-template-columns: repeat(auto-fit, minmax(10%, 1fr));
+}
+
+.video-player .features .extras .controls .vid-ctrl * {
+    color: white;
+}
+
+.video-player .features .extras .controls .vid-options {
+    grid-auto-flow: column;
+    grid-template-columns: repeat(auto-fit, minmax(10%, 1fr));
+}

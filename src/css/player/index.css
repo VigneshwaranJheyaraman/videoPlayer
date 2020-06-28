@@ -1,8 +1,14 @@
 @import "./base.css";
 @import "./player.css";
+@import "./video.css";
+@import "./playerOverlay.css";
+@import "./features.css";
+@import "./settings.css";
 @import "./actions.css";
 .video-player,
 .video-player * {
     --trans-time: 0.2s;
+    -webkit-transition: all var(--trans-time) linear;
+    -o-transition: all var(--trans-time) linear;
     transition: all var(--trans-time) linear;
 }

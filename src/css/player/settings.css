@@ -1,0 +1,21 @@
+/*Player settings*/
+
+.video-player:hover .play-pause-btn * {
+    opacity: 1;
+}
+
+.not-started-playing .play-pause-btn .fa-play {
+    display: inline-block;
+}
+
+.playing .play-pause-btn .fa-pause {
+    display: inline-block;
+}
+
+.not-playing .play-pause-btn .fa-play {
+    display: inline-block;
+}
+
+.completed .play-pause-btn .fa-repeat {
+    display: inline-block;
+}

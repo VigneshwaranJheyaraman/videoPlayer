@@ -26,6 +26,7 @@ class SubtitleExtractor {
         this.__subtitleResponeParser = this.__subtitleResponeParser.bind(this);
         this.__initializeSubtitleDictionary = this.__initializeSubtitleDictionary.bind(this);
         this.__initializeSynchronizer = this.__initializeSynchronizer.bind(this);
+        this.init = this.init.bind(this);
     }
 
     get url() {
@@ -33,7 +34,7 @@ class SubtitleExtractor {
     }
     set url(newUrl) {
         this.__subtitleUrl = newUrl;
-        this.__fetchSubtitleFromURL();
+        this.__initializeSubtitleDictionary();
     }
 
     __fetchSubtitleFromURL() {
@@ -104,6 +105,10 @@ class SubtitleExtractor {
         this.__fetchSubtitleFromURL();
         this.__subtitleResponeParser();
         this.__initializeSynchronizer();
+    }
+
+    init() {
+        this.__initializeSubtitleDictionary();
     }
 
     __initializeSynchronizer() {

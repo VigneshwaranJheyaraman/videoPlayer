@@ -1,5 +1,6 @@
 .video-player:hover .video {
     --dullify: 50%;
+    -webkit-filter: brightness(var(--dullify));
     filter: brightness(var(--dullify));
 }
 
