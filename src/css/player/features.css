@@ -122,3 +122,16 @@
     grid-auto-flow: column;
     grid-template-columns: repeat(auto-fit, minmax(10%, 1fr));
 }
+
+
+/*newly added*/
+
+.video-player .features .extras .controls .toggled::after {
+    --togglerHeight: 2px;
+    position: relative;
+    width: 100%;
+    height: var(--togglerHeight);
+    background-color: yellow;
+    content: "";
+    display: block;
+}

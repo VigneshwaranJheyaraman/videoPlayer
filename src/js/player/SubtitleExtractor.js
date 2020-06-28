@@ -9,10 +9,11 @@ class SubtitleExtractor {
         this.__subtitleDictionary = {};
         this.__subtitleTextResponse = null;
         this.__videoSynchronizer = null;
+        this.__videoElement = props.video ? props.video : null;
         this.__subtitleRegex = {
             newLine: "\n",
-            everyNewSubtitle: /^$/,
-            subtitleCount: /^[0-9]{1,5}$/,
+            everyNewSubtitle: /^\s*$/,
+            subtitleCount: /^[0-9]{1,5}\s*$/,
             fromToTime: /(([0-9][0-9]):([0-9][0-9]):([0-9][0-9]),[0-9]{1,5})\s*(-->)\s*(([0-9][0-9]):([0-9][0-9]):([0-9][0-9]),[0-9]{1,5})/,
             time: /([0-9][0-9]):([0-9][0-9]):([0-9][0-9]),[0-9]{1,5}/,
             nextSubPointer: "<=>",
@@ -27,6 +28,7 @@ class SubtitleExtractor {
         this.__initializeSubtitleDictionary = this.__initializeSubtitleDictionary.bind(this);
         this.__initializeSynchronizer = this.__initializeSynchronizer.bind(this);
         this.init = this.init.bind(this);
+        this.init();
     }
 
     get url() {
@@ -50,7 +52,10 @@ class SubtitleExtractor {
                 }
             }).then(textResponse => {
                 this.__subtitleTextResponse = textResponse;
+                this.__subtitleResponeParser();
+                this.__initializeSynchronizer();
             }).catch(err => {
+                console.log(err);
                 throw new Error("Error processing the request " + err);
             });
         }
@@ -103,8 +108,6 @@ class SubtitleExtractor {
 
     __initializeSubtitleDictionary() {
         this.__fetchSubtitleFromURL();
-        this.__subtitleResponeParser();
-        this.__initializeSynchronizer();
     }
 
     init() {
@@ -113,7 +116,7 @@ class SubtitleExtractor {
 
     __initializeSynchronizer() {
         if (JSON.stringify(this.__subtitleDictionary) !== JSON.stringify({})) {
-            this.__videoSynchronizer = new SubtitleSynchronizer(this.__subtitleDictionary);
+            this.__videoSynchronizer = new SubtitleSynchronizer({ video: this.__videoElement, subtitleDictionary: this.__subtitleDictionary });
         }
     }
 

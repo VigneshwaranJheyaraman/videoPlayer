@@ -1,110 +1,75 @@
 class SubtitleSynchronizer {
-    constructor(subtitleDictionary) {
-        this.__dictionary = subtitleDictionary;
+    constructor(props) {
+        this.__videoElement = props.video;
+        this.__dictionary = props.subtitleDictionary;
         this.__currentSubtitle = null;
-        this.__currentSec = 0;
-        this.__milliSecCount = 0;
-        this.__milliSecOffset = 100;
-        this.__milliSecInterval = 100;
-        this.__synchronizing = false;
-        this.__synchronizingIntervalHandler = null;
-        this.__stopped = false;
         this.__subtitleUICallback = null;
+        this.__currentTime = props.video ? props.video.currentTime : null;
 
-        this.initSync = this.initSync.bind(this);
-        this.sync = this.sync.bind(this);
-        this.pauseSync = this.pauseSync.bind(this);
-        this.stopSync = this.stopSync.bind(this);
-        this.__clearSync = this.__clearSync.bind(this);
-        this.__updateCurrentSubtitle = this.__updateCurrentSubtitle.bind(this);
+        this.__initVideoEvents = this.__initVideoEvents.bind(this);
+        this.__sync = this.__sync.bind(this);
+        this.__removeEvents = this.__removeEvents.bind(this);
         this.__updateTime = this.__updateTime.bind(this);
-        this.__runTimer = this.__runTimer.bind(this);
-        this.__synchronize = this.__synchronize.bind(this);
-        this.__initializeSynchronizer = this.__initializeSynchronizer.bind(this);
+        this.__updateCurrentSubtitle = this.__updateCurrentSubtitle.bind(this);
+
+        this.__initVideoEvents();
     }
 
     get currentTime() {
-        return this.__currentSec + (this.__milliSecCount / 1000);
+        return this.__currentTime;
+    }
+    set currentTime(newTime) {
+        this.__currentTime = newTime;
+    }
+
+    get currentSub() {
+        return this.__currentSubtitle ? this.__currentSubtitle : "";
+    }
+    set currentSub(newSub) {
+        this.__currentSubtitle = newSub;
     }
 
     get subtitleUICallback() {
         return this.__subtitleUICallback;
     }
-    set subtitleUICallback(domUpdates) {
-        this.__subtitleUICallback = domUpdates;
+    set subtitleUICallback(newCB) {
+        this.__subtitleUICallback = newCB;
     }
 
-    initSync() {
-        this.__synchronizingIntervalHandler = this.__initializeSynchronizer();
+    __updateTime() {
+        this.currentTime = this.__videoElement.currentTime;
     }
 
-    sync() {
-        if (!this.__synchronizingIntervalHandler) {
-            this.initSync();
-        }
-        this.__synchronizing = true;
-    }
-
-    pauseSync() {
-        this.__synchronizing = false;
-    }
-
-    stopSync() {
-        this.__stopped = true;
-        this.__synchronizing = false;
-    }
-
-    __runTimer() {
-        if (this.__milliSecCount < 1000) {
-            this.__milliSecCount += this.__milliSecOffset;
-        } else {
-            this.__milliSecCount = 0;
-            this.__currentSec += 1;
+    __sync() {
+        if (!this.__videoElement.paused) {
+            this.__updateTime();
+            this.__updateCurrentSubtitle();
+            this.subtitleUICallback && this.subtitleUICallback();
         }
     }
 
-    __clearSync() {
-        clearInterval(this.__synchronizingIntervalHandler);
-        this.__currentSec = 0;
-        this.__milliSecCount = 0;
-        this.__currentSubtitle = null;
-        this.__synchronizing = false;
-        this.__synchronizingIntervalHandler = null;
+    __initVideoEvents() {
+        if (this.__videoElement) {
+            this.__videoElement.addEventListener("timeupdate", this.__sync);
+        }
+        window.addEventListener("unload", this.__removeEvents);
     }
 
+    __removeEvents() {
+        this.__videoElement.removeEventListener("timeupdate", this.__sync);
+    }
 
     __updateCurrentSubtitle() {
-        var currentTime = this.currentTime;
+        var currentTime = parseFloat(this.currentTime.toFixed(2));
         Object.keys(this.__dictionary).forEach(key => {
             key = parseFloat(key);
             if ((currentTime - key) < 1 && (currentTime - key) >= 0) {
                 if (currentTime < this.__dictionary[key].to) {
-                    this.__currentSubtitle = this.__dictionary[key].subtitle;
+                    this.currentSub = this.__dictionary[key].subtitle;
                     this.subtitleUICallback && this.subtitleUICallback();
                 }
                 return;
             }
         });
-    }
-
-    __synchronize() {
-        this.__updateTime();
-        this.__updateCurrentSubtitle();
-    }
-
-
-    __updateTime() {
-        if (this.__synchronizing) {
-            this.__runTimer();
-            console.log(this.__currentSubtitle, this.currentTime);
-        }
-        if (this.__stopped) {
-            this.__clearSync();
-        }
-    }
-
-    __initializeSynchronizer() {
-        this.__stopped = false;
-        return setInterval(this.__synchronize, this.__milliSecInterval);
     }
 }

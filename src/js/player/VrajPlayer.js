@@ -14,15 +14,17 @@ class VrajPlayer extends Player {
             stop: properties.controls.querySelector("#stopBtn"),
             ffwd: properties.controls.querySelector("#fwBtn"),
             bbwd: properties.controls.querySelector("#bwBtn"),
-            fullScreen: properties.controls.querySelector("#fullScreen")
+            fullScreen: properties.controls.querySelector("#fullScreen"),
+            cc: properties.controls.querySelector("#ccBtn")
         };
         this.__overlayControls = {
             play: properties.overlay.querySelector(".fa-play"),
             pause: properties.overlay.querySelector(".fa-pause"),
             repeat: properties.overlay.querySelector('.fa-repeat')
         };
+        this.__subtitleComponent = this.__playerContainer.querySelector("#subtitle");
         this.__subtitleEnabled = false;
-        this.__subtitleHandler = new SubtitleExtractor({ url: properties.subtitleURL ? properties.subtitleURL : null });
+        this.__subtitleHandler = new SubtitleExtractor({ video: this.__playerElement, url: properties.subtitleURL ? properties.subtitleURL : null });
 
         this.__updateVideoSource = this.__updateVideoSource.bind(this);
         this.__intializeVideoElementProperties = this.__intializeVideoElementProperties.bind(this);
@@ -40,6 +42,10 @@ class VrajPlayer extends Player {
         this.pause = this.pause.bind(this);
         this.stop = this.stop.bind(this);
         this.__updatePlayerUI = this.__updatePlayerUI.bind(this);
+        this.__toggleSubtitle = this.__toggleSubtitle.bind(this);
+        this.__toggleSubsComponentDisplay = this.__toggleSubsComponentDisplay.bind(this);
+        this.syncSubtitle = this.syncSubtitle.bind(this);
+        this.__updateSubtitleCB = this.__updateSubtitleCB.bind(this);
         this.__intializeVideoElementProperties();
         this.__updateVideoSource();
         this.subscribe();
@@ -57,6 +63,7 @@ class VrajPlayer extends Player {
         if (this.videoPlayable) {
             this.__playerElement.controls = false;
         }
+        this.__toggleSubsComponentDisplay();
     }
 
     subscribe() {
@@ -89,6 +96,7 @@ class VrajPlayer extends Player {
             progressCB: this.__updateUIProgress
         });
         this.__initVideoControlsEvents();
+        this.syncSubtitle();
     }
 
     __updateUIProgress() {
@@ -131,6 +139,40 @@ class VrajPlayer extends Player {
         this.__updatePlayerUI();
     }
 
+    __toggleSubsComponentDisplay() {
+        if (!this.__subtitleEnabled) {
+            if (this.__subtitleComponent) { this.__subtitleComponent.style.display = "none"; }
+        } else {
+            if (this.__subtitleComponent) { this.__subtitleComponent.style.display = "block"; }
+        }
+    }
+
+    __toggleSubtitle() {
+        const subtitleClass = "toggled";
+        this.__subtitleEnabled = !this.__subtitleEnabled;
+        if (this.__subtitleEnabled) {
+            this.__controls.cc.classList.add(subtitleClass);
+            this.__toggleSubsComponentDisplay();
+        } else {
+            this.__controls.cc.classList.remove(subtitleClass);
+            this.__toggleSubsComponentDisplay();
+        }
+    }
+
+    syncSubtitle() {
+        if (this.__subtitleHandler.__videoSynchronizer) {
+            this.__subtitleHandler.__videoSynchronizer.subtitleUICallback = this.__updateSubtitleCB();
+        }
+    }
+
+    __updateSubtitleCB() {
+        if (this.__subtitleHandler && this.__subtitleComponent) {
+            if (this.__subtitleHandler.__videoSynchronizer && this.__subtitleHandler.__videoSynchronizer.currentSub) {
+                this.__subtitleComponent.innerText = this.__subtitleHandler.__videoSynchronizer.currentSub;
+            }
+        }
+    }
+
     __initVideoControlsEvents() {
         this.__controls.play.addEventListener("click", this.play);
         this.__controls.pause.addEventListener("click", this.pause);
@@ -145,6 +187,7 @@ class VrajPlayer extends Player {
         this.__overlayControls.pause.addEventListener("click", this.pause);
         this.__overlayControls.repeat.addEventListener("click", this.play);
         this.__controls.fullScreen.addEventListener("click", this.toggleFullScreen);
+        this.__controls.cc.addEventListener("click", this.__toggleSubtitle);
         window.addEventListener("blur", this.pause);
         window.addEventListener("focus", this.play);
     }
@@ -171,6 +214,7 @@ class VrajPlayer extends Player {
         this.__overlayControls.pause.removeEventListener("click", this.pause);
         this.__overlayControls.repeat.removeEventListener("click", this.play);
         this.__controls.fullScreen.removeEventListener("click", this.toggleFullScreen);
+        this.__controls.cc.removeEventListener("click", this.__toggleSubtitle);
         window.removeEventListener("blur", this.pause);
         window.removeEventListener("focus", this.play);
     }
