@@ -10,6 +10,7 @@ class SubtitleExtractor {
         this.__subtitleTextResponse = null;
         this.__videoSynchronizer = null;
         this.__videoElement = props.video ? props.video : null;
+        this.__subtitleUICB = props.subtitleUICallback;
         this.__subtitleRegex = {
             newLine: "\n",
             everyNewSubtitle: /^\s*$/,
@@ -117,6 +118,7 @@ class SubtitleExtractor {
     __initializeSynchronizer() {
         if (JSON.stringify(this.__subtitleDictionary) !== JSON.stringify({})) {
             this.__videoSynchronizer = new SubtitleSynchronizer({ video: this.__videoElement, subtitleDictionary: this.__subtitleDictionary });
+            this.__videoSynchronizer.subtitleUICallback = this.__subtitleUICB;
         }
     }
 

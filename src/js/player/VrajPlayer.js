@@ -24,7 +24,12 @@ class VrajPlayer extends Player {
         };
         this.__subtitleComponent = this.__playerContainer.querySelector("#subtitle");
         this.__subtitleEnabled = false;
-        this.__subtitleHandler = new SubtitleExtractor({ video: this.__playerElement, url: properties.subtitleURL ? properties.subtitleURL : null });
+        this.syncSubtitle = this.syncSubtitle.bind(this);
+        this.__subtitleHandler = new SubtitleExtractor({
+            video: this.__playerElement,
+            url: properties.subtitleURL ? properties.subtitleURL : null,
+            subtitleUICallback: this.syncSubtitle
+        });
 
         this.__updateVideoSource = this.__updateVideoSource.bind(this);
         this.__intializeVideoElementProperties = this.__intializeVideoElementProperties.bind(this);
@@ -41,11 +46,14 @@ class VrajPlayer extends Player {
         this.play = this.play.bind(this);
         this.pause = this.pause.bind(this);
         this.stop = this.stop.bind(this);
+        this.jumpFront = this.jumpFront.bind(this);
+        this.jumpBack = this.jumpBack.bind(this);
         this.__updatePlayerUI = this.__updatePlayerUI.bind(this);
         this.__toggleSubtitle = this.__toggleSubtitle.bind(this);
         this.__toggleSubsComponentDisplay = this.__toggleSubsComponentDisplay.bind(this);
-        this.syncSubtitle = this.syncSubtitle.bind(this);
-        this.__updateSubtitleCB = this.__updateSubtitleCB.bind(this);
+        this.__videoWatchingCompleted = this.__videoWatchingCompleted.bind(this);
+        this.__jumpVideoEventHandler = this.__jumpVideoEventHandler.bind(this);
+        this.__bufferProgressUI = this.__bufferProgressUI.bind(this);
         this.__intializeVideoElementProperties();
         this.__updateVideoSource();
         this.subscribe();
@@ -93,16 +101,22 @@ class VrajPlayer extends Player {
         this.__mediaController = new MediaController({
             videoElement: this.__playerElement,
             sliderWidth: this.__slider.seeker.parentElement.offsetWidth,
-            progressCB: this.__updateUIProgress
+            progressCB: this.__updateUIProgress,
+            bufferCB: this.__bufferProgressUI
         });
         this.__initVideoControlsEvents();
-        this.syncSubtitle();
     }
 
     __updateUIProgress() {
         this.__slider.seeker.style.left = this.__mediaController.progressPixel;
         if (!this.__mediaController.isSeeking) {
             this.__slider.progress.style.width = this.__mediaController.progressPercent;
+        }
+    }
+
+    __bufferProgressUI() {
+        if (!this.__mediaController.isPlaying || !this.__mediaController.isSeeking || !this.__mediaController.completedWatching) {
+            this.__slider.buffered.style.width = this.__mediaController.buffered.progressPercent + "%";
         }
     }
 
@@ -139,6 +153,16 @@ class VrajPlayer extends Player {
         this.__updatePlayerUI();
     }
 
+    jumpBack() {
+        this.__mediaController.skipBwd();
+        this.__updatePlayerUI();
+    }
+
+    jumpFront() {
+        this.__mediaController.skipFwd();
+        this.__updatePlayerUI();
+    }
+
     __toggleSubsComponentDisplay() {
         if (!this.__subtitleEnabled) {
             if (this.__subtitleComponent) { this.__subtitleComponent.style.display = "none"; }
@@ -160,12 +184,6 @@ class VrajPlayer extends Player {
     }
 
     syncSubtitle() {
-        if (this.__subtitleHandler.__videoSynchronizer) {
-            this.__subtitleHandler.__videoSynchronizer.subtitleUICallback = this.__updateSubtitleCB();
-        }
-    }
-
-    __updateSubtitleCB() {
         if (this.__subtitleHandler && this.__subtitleComponent) {
             if (this.__subtitleHandler.__videoSynchronizer && this.__subtitleHandler.__videoSynchronizer.currentSub) {
                 this.__subtitleComponent.innerText = this.__subtitleHandler.__videoSynchronizer.currentSub;
@@ -188,8 +206,8 @@ class VrajPlayer extends Player {
         this.__overlayControls.repeat.addEventListener("click", this.play);
         this.__controls.fullScreen.addEventListener("click", this.toggleFullScreen);
         this.__controls.cc.addEventListener("click", this.__toggleSubtitle);
-        window.addEventListener("blur", this.pause);
-        window.addEventListener("focus", this.play);
+        this.__playerElement.addEventListener("ended", this.__videoWatchingCompleted);
+        this.__playerContainer.addEventListener("dblclick", this.__jumpVideoEventHandler);
     }
 
     __startDragging() {
@@ -198,6 +216,24 @@ class VrajPlayer extends Player {
 
     __stopDragging() {
         this.__mediaController.isSeeking = false;
+    }
+
+    __videoWatchingCompleted() {
+        if (this.__mediaController.completedWatching) {
+            this.__updatePlayerUI();
+        }
+    }
+
+    __jumpVideoEventHandler(e) {
+        if (this.__playerContainer && this.__mediaController.isPlaying) {
+            var containerHalfWay = this.__playerContainer.offsetWidth / 2;
+            var wantToSkipBwd = e.pageX < containerHalfWay;
+            if (wantToSkipBwd) {
+                this.jumpBack();
+            } else {
+                this.jumpFront();
+            }
+        }
     }
 
     __removeControlEvents() {
@@ -215,7 +251,6 @@ class VrajPlayer extends Player {
         this.__overlayControls.repeat.removeEventListener("click", this.play);
         this.__controls.fullScreen.removeEventListener("click", this.toggleFullScreen);
         this.__controls.cc.removeEventListener("click", this.__toggleSubtitle);
-        window.removeEventListener("blur", this.pause);
-        window.removeEventListener("focus", this.play);
+        this.__playerElement.removeEventListener("ended", this.__videoWatchingCompleted);
     }
 }

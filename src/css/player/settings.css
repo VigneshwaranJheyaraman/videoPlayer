@@ -1,6 +1,7 @@
 /*Player settings*/
 
-.video-player:hover .play-pause-btn * {
+.video-player:hover .play-pause-btn *,
+.not-started-playing .play-pause-btn * {
     opacity: 1;
 }
 
