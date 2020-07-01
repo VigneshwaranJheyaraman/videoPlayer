@@ -5,6 +5,15 @@
     opacity: 1;
 }
 
+.not-started-playing {
+    --videoZ: 1;
+    --thumbnail: 2;
+}
+
+.not-started-playing .thumbnail {
+    opacity: 1;
+}
+
 .not-started-playing .play-pause-btn .fa-play {
     display: inline-block;
 }

@@ -1,7 +1,32 @@
 /*Video player css*/
 
 .video-player {
+    --videoZ: 2;
+    --thumbnail: 1;
+    --overlayPlay: 3;
+    --features: 4;
     position: relative;
     width: 100%;
     background-color: black;
+}
+
+.video-player .video {
+    z-index: var(--videoZ);
+}
+
+.video-player .thumbnail {
+    z-index: var(--thumbnail);
+    opacity: 0;
+}
+
+.video-player .play-pause-btn {
+    z-index: var(--overlayPlay);
+}
+
+.video-player .features {
+    z-index: var(--features);
+}
+
+.video-player .play-pause-btn {
+    z-index: var(--overlayPlay);
 }

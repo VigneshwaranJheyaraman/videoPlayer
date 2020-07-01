@@ -35,7 +35,7 @@
     word-wrap: break-word;
     background-color: rgba(124, 124, 124);
     border-radius: 5px;
-    text-align: justify;
+    text-align: center;
 }
 
 .video-player .features .extras * {
@@ -49,6 +49,11 @@
     width: 100%;
     height: var(--slider-mini-hg);
     background-color: black;
+}
+
+.video-player .features .extras .slider:hover {
+    background-color: slategray;
+    cursor: pointer;
 }
 
 .video-player .features .extras .slider #seeker {
@@ -122,9 +127,6 @@
     grid-auto-flow: column;
     grid-template-columns: repeat(auto-fit, minmax(10%, 1fr));
 }
-
-
-/*newly added*/
 
 .video-player .features .extras .controls .toggled::after {
     --togglerHeight: 2px;

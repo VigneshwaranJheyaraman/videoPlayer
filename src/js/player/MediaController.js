@@ -14,6 +14,9 @@ class MediaController {
         this.__maxPlayBack = 3.0;
         this.__constPlayBack = 1.0;
         this.__skipOffset = 3;
+        this.__volumeOffset = 0.1;
+        this.__videoVolume = 1;
+        this.isMuted = this.__checkIsMuted;
         this.__progressCB = props.progressCB ? props.progressCB : null;
         this.__startedSeeking = false;
         this.__updatePositionOffset = this.__updatePositionOffset.bind(this);
@@ -35,6 +38,9 @@ class MediaController {
         this.__updateLastTime = this.__updateLastTime.bind(this);
         this.__updateProgressPercentValue = this.__updateProgressPercentValue.bind(this);
         this.__updateProgressPixelValue = this.__updateProgressPixelValue.bind(this);
+        this.increaseVol = this.increaseVol.bind(this);
+        this.decreaseVol = this.decreaseVol.bind(this);
+        this.__checkIsMuted = this.__checkIsMuted.bind(this);
         this.__updatePositionOffset();
         this.__initializeVideoPlaybackEvents();
     }
@@ -89,6 +95,19 @@ class MediaController {
         this.__startedSeeking = newSeek;
     }
 
+    get volume() {
+        return this.__videoVolume;
+    }
+    set volume(newVolume) {
+        if (newVolume < 1) {
+            this.__videoVolume = newVolume;
+        } else if (newVolume <= 0) {
+            this.__videoVolume = 0;
+        } else {
+            this.__videoVolume = 1;
+        }
+    }
+
     get completedWatching() {
         return this.__watched;
     }
@@ -126,6 +145,10 @@ class MediaController {
         this.progressPixel = parseFloat((this.__sliderWidth * progressUpdated).toFixed(3));
         this.__videoElement.currentTime = this.lastTime;
         this.__didCompletedWatching();
+    }
+
+    __checkIsMuted() {
+        return this.__videoVolume === 0;
     }
 
     __updateLastBuffer() {
@@ -227,8 +250,6 @@ class MediaController {
         if (this.isSeeking) {
             e = e || window.event;
             this.__calculateDragProgress(e);
-            this.__videoElement.currentTime = this.lastTime;
-            this.play();
         }
     }
 
@@ -238,6 +259,16 @@ class MediaController {
 
     skipBwd() {
         this.__calculateSkipProgress(this.lastTime - this.__skipOffset);
+    }
+
+    increaseVol() {
+        this.volume += this.__volumeOffset;
+        this.__videoElement.volume = this.volume;
+    }
+
+    decreaseVol() {
+        this.volume -= this.__volumeOffset;
+        this.__videoElement.volume = this.volume;
     }
 
     __initializeVideoPlaybackEvents() {
