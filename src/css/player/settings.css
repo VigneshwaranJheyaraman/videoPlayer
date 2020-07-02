@@ -1,13 +1,18 @@
 /*Player settings*/
 
 .video-player:hover .play-pause-btn *,
-.not-started-playing .play-pause-btn * {
+.not-started-playing .play-pause-btn *,
+.loading .play-pause-btn * {
     opacity: 1;
 }
 
 .not-started-playing {
     --videoZ: 1;
     --thumbnail: 2;
+}
+
+.loading .play-pause-btn .fa-spinner {
+    display: inline-block;
 }
 
 .not-started-playing .thumbnail {

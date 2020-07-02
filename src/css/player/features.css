@@ -20,6 +20,7 @@
     --extras-minmized: var(--slider-mini-hg);
     width: 100%;
     height: var(--extras-minmized);
+    background-color: black;
 }
 
 .video-player .features .subs {

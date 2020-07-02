@@ -8,6 +8,7 @@ class VrajPlayer extends Player {
             progress: properties.slider.querySelector("#progress"),
             buffered: properties.slider.querySelector("#buffer"),
         };
+        this.__detailsComponent = this.__playerContainer.querySelector("#details");
         this.thumbURL = properties.thumbURL;
         this.__mediaController = null;
         this.__thumbnailComponent = null;
@@ -35,9 +36,9 @@ class VrajPlayer extends Player {
         });
         this.__keyPointers = {
             32: (e) => this.__togglePlayPause(),
-            37: (e) => this.jumpFront(e),
+            37: (e) => this.jumpBack(e),
             38: (e) => this.__mediaController.increaseVol(),
-            39: (e) => this.jumpBack(e),
+            39: (e) => this.jumpFront(e),
             40: (e) => this.__mediaController.decreaseVol(),
             83: (e) => this.__toggleSubsComponentDisplay()
         }
@@ -61,6 +62,7 @@ class VrajPlayer extends Player {
         this.jumpBack = this.jumpBack.bind(this);
         this.__updatePlayerUI = this.__updatePlayerUI.bind(this);
         this.__toggleSubtitle = this.__toggleSubtitle.bind(this);
+        this.__initPlayerUI = this.__initPlayerUI.bind(this);
         this.seek = this.seek.bind(this);
         this.jumpTo = this.jumpTo.bind(this);
         this.__toggleSubsComponentDisplay = this.__toggleSubsComponentDisplay.bind(this);
@@ -70,6 +72,13 @@ class VrajPlayer extends Player {
         this.__initializeThumbnail = this.__initializeThumbnail.bind(this);
         this.__togglePlayPause = this.__togglePlayPause.bind(this);
         this.__handleKeyPress = this.__handleKeyPress.bind(this);
+        this.__showDetails = this.__showDetails.bind(this);
+        this.__hideDetails = this.__hideDetails.bind(this);
+        this.showTimeDetails = this.showTimeDetails.bind(this);
+        this.showSeekingDetails = this.showSeekingDetails.bind(this);
+        this.__calculateHMS = this.__calculateHMS.bind(this);
+        this.showLoading = this.showLoading.bind(this);
+        this.hideLoading = this.hideLoading.bind(this);
         this.__intializeVideoElementProperties();
         this.__updateVideoSource();
         this.subscribe();
@@ -151,6 +160,11 @@ class VrajPlayer extends Player {
         }
     }
 
+    __initPlayerUI() {
+        this.hideLoading();
+        this.__playerContainer.classList.add("not-started-playing");
+    }
+
     __updatePlayerUI() {
         this.__playerContainer.classList.remove("not-started-playing");
         if (this.__mediaController.completedWatching) {
@@ -171,6 +185,9 @@ class VrajPlayer extends Player {
 
     play() {
         this.__mediaController.play();
+        this.__playerElement.playbackRate = this.__mediaController.__constPlayBack;
+        this.__hideDetails();
+        this.hideLoading();
         this.__updatePlayerUI();
     }
 
@@ -185,8 +202,10 @@ class VrajPlayer extends Player {
     }
 
     seek(e) {
-        this.__mediaController.seek(e);
-        this.play();
+        if (this.__mediaController.isSeeking) {
+            this.__mediaController.seek(e);
+            this.play();
+        }
     }
 
     jumpBack() {
@@ -241,6 +260,53 @@ class VrajPlayer extends Player {
         }
     }
 
+    __showDetails(details) {
+        if (details && details.length > 0) {
+            this.__detailsComponent.style.opacity = 1;
+            this.__detailsComponent.innerText = details;
+        }
+    }
+
+    __hideDetails() {
+        setTimeout(() => {
+            this.__detailsComponent.style.opacity = 0;
+        }, 1000);
+    }
+
+    __calculateHMS(duration) {
+        var sec = duration % (24 * 3600);
+        var hr = Math.floor(sec / 3600);
+        sec %= 3600
+        var min = Math.floor(sec / 60)
+        sec %= 60
+        sec = parseFloat(sec.toFixed(2));
+        return [hr, min, sec];
+    }
+
+    showSeekingDetails() {
+        if (this.__mediaController && this.__mediaController.isSeeking) {
+            var totalTime = this.__mediaController.duration;
+            totalTime = this.__calculateHMS(totalTime);
+            var currentTime = this.__mediaController.lastTime;
+            currentTime = this.__calculateHMS(currentTime);
+            this.__showDetails(`${currentTime[0]}:${currentTime[1]}:${currentTime[2]} / ${totalTime[0]}:${totalTime[1]}:${totalTime[2]}`);
+        }
+    }
+
+    showTimeDetails() {
+        if (this.__detailsComponent) {
+            this.__showDetails(`${this.__playerElement.playbackRate}X`);
+        }
+    }
+
+    showLoading() {
+        this.__playerContainer.classList.add("loading");
+    }
+
+    hideLoading() {
+        this.__playerContainer.classList.remove("loading");
+    }
+
     __initVideoControlsEvents() {
         this.__controls.play.addEventListener("click", this.play);
         this.__controls.pause.addEventListener("click", this.pause);
@@ -250,7 +316,7 @@ class VrajPlayer extends Player {
         this.__slider.seeker.addEventListener("mousedown", this.__startDragging);
         this.__slider.seeker.addEventListener("mouseup", this.__stopDragging);
         this.__playerContainer.addEventListener("mouseup", this.__stopDragging);
-        this.__playerContainer.addEventListener("mousemove", this.__mediaController.seek);
+        this.__playerContainer.addEventListener("mousemove", this.seek);
         this.__overlayControls.play.addEventListener("click", this.play);
         this.__overlayControls.pause.addEventListener("click", this.pause);
         this.__overlayControls.repeat.addEventListener("click", this.play);
@@ -258,6 +324,9 @@ class VrajPlayer extends Player {
         this.__controls.cc.addEventListener("click", this.__toggleSubtitle);
         this.__playerElement.addEventListener("ended", this.__videoWatchingCompleted);
         this.__playerContainer.addEventListener("dblclick", this.__jumpVideoEventHandler);
+        this.__playerElement.addEventListener("seeking", this.showSeekingDetails);
+        this.__playerElement.addEventListener("ratechange", this.showTimeDetails);
+        this.__playerElement.addEventListener("loadeddata", this.__initPlayerUI);
         this.__slider.self.addEventListener("click", this.jumpTo);
         window.addEventListener("keydown", this.__handleKeyPress);
     }
@@ -306,6 +375,9 @@ class VrajPlayer extends Player {
         this.__controls.cc.removeEventListener("click", this.__toggleSubtitle);
         this.__playerElement.removeEventListener("ended", this.__videoWatchingCompleted);
         this.__slider.self.removeEventListener("click", this.jumpTo);
+        this.__playerElement.removeEventListener("seeking", this.showSeekingDetails);
+        this.__playerElement.removeEventListener("ratechange", this.showTimeDetails);
+        this.__playerElement.removeEventListener("loadeddata", this.__initPlayerUI);
         window.removeEventListener("keydown", this.__handleKeyPress);
     }
 }

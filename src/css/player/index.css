@@ -2,10 +2,11 @@
 @import "./player.css";
 @import "./video.css";
 @import "./playerOverlay.css";
+@import "./thumbnail.css";
+@import "./details.css";
 @import "./features.css";
 @import "./settings.css";
 @import "./actions.css";
-@import "./thumbnail.css";
 .video-player,
 .video-player * {
     --trans-time: 0.2s;

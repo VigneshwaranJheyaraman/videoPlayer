@@ -153,7 +153,7 @@ class MediaController {
 
     __updateLastBuffer() {
         var buffered = this.__videoElement.buffered;
-        if (this.__videoElement && buffered) {
+        if (this.__videoElement && buffered && buffered.length > 0) {
             this.__buffered.lastTime = buffered.length > 2 ? buffered.end(buffered.length - 2) : buffered.end(0);
             if (this.duration > 0) {
                 this.__buffered.lastTime = this.__updateLastTime(this.__buffered.lastTime);

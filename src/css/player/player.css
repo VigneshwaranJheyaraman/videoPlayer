@@ -5,6 +5,7 @@
     --thumbnail: 1;
     --overlayPlay: 3;
     --features: 4;
+    --details: 5;
     position: relative;
     width: 100%;
     background-color: black;
@@ -29,4 +30,8 @@
 
 .video-player .play-pause-btn {
     z-index: var(--overlayPlay);
+}
+
+.video-player .details {
+    z-index: var(--details);
 }
