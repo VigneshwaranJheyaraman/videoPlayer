@@ -41,7 +41,8 @@ class VrajPlayer extends Player {
             39: (e) => this.jumpFront(e),
             40: (e) => this.__mediaController.decreaseVol(),
             83: (e) => this.__toggleSubsComponentDisplay()
-        }
+        };
+        this.__overlayDisplayTimeout = 1e3 * 3;
 
         this.__updateVideoSource = this.__updateVideoSource.bind(this);
         this.__intializeVideoElementProperties = this.__intializeVideoElementProperties.bind(this);
@@ -75,6 +76,7 @@ class VrajPlayer extends Player {
         this.__showDetails = this.__showDetails.bind(this);
         this.__hideDetails = this.__hideDetails.bind(this);
         this.showTimeDetails = this.showTimeDetails.bind(this);
+        this.__toggleOverlay = this.__toggleOverlay.bind(this);
         this.showSeekingDetails = this.showSeekingDetails.bind(this);
         this.__calculateHMS = this.__calculateHMS.bind(this);
         this.showLoading = this.showLoading.bind(this);
@@ -157,6 +159,7 @@ class VrajPlayer extends Player {
         if (e.keyCode) {
             var keyFunc = this.__keyPointers[e.keyCode];
             keyFunc && keyFunc(e);
+            this.__toggleOverlay();
         }
     }
 
@@ -307,6 +310,13 @@ class VrajPlayer extends Player {
         this.__playerContainer.classList.remove("loading");
     }
 
+    __toggleOverlay() {
+        this.__playerContainer.classList.add("show-overlay");
+        setTimeout(() => {
+            this.__playerContainer.classList.remove("show-overlay");
+        }, this.__overlayDisplayTimeout);
+    }
+
     __initVideoControlsEvents() {
         this.__controls.play.addEventListener("click", this.play);
         this.__controls.pause.addEventListener("click", this.pause);
@@ -367,7 +377,7 @@ class VrajPlayer extends Player {
         this.__slider.seeker.removeEventListener("mousedown", this.__startDragging);
         this.__slider.seeker.removeEventListener("mouseup", this.__stopDragging);
         this.__playerContainer.removeEventListener("mouseup", this.__stopDragging);
-        this.__playerContainer.removeEventListener("mousemove", this.__mediaController.seek);
+        this.__playerContainer.removeEventListener("mousemove", this.seek);
         this.__overlayControls.play.removeEventListener("click", this.play);
         this.__overlayControls.pause.removeEventListener("click", this.pause);
         this.__overlayControls.repeat.removeEventListener("click", this.play);

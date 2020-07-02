@@ -2,7 +2,8 @@
 
 .video-player:hover .play-pause-btn *,
 .not-started-playing .play-pause-btn *,
-.loading .play-pause-btn * {
+.loading .play-pause-btn *,
+.show-overlay .play-pause-btn * {
     opacity: 1;
 }
 

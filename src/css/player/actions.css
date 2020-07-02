@@ -4,18 +4,17 @@
     filter: brightness(var(--dullify));
 }
 
-.video-player:hover .play-pause-btn::after {
-    opacity: 1;
-}
-
-.video-player:hover .features .extras {
+.video-player:hover .features .extras,
+.show-overlay .features .extras {
     min-height: var(--extras-hg);
 }
 
-.video-player:hover .features .extras .slider {
+.video-player:hover .features .extras .slider,
+.show-overlay .features .extras .slider {
     height: var(--slider-hg);
 }
 
-.video-player:hover .features .extras .slider #seeker {
+.video-player:hover .features .extras .slider #seeker,
+.show-overlay .features .extras .slider #seeker {
     height: var(--seeker-hg);
 }
