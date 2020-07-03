@@ -12,6 +12,11 @@
     --thumbnail: 2;
 }
 
+.video-player .play-pause-btn .fa-exclamation-triangle {
+    display: inline-block;
+    opacity: 0;
+}
+
 .loading .play-pause-btn .fa-spinner {
     display: inline-block;
 }
@@ -20,18 +25,17 @@
     opacity: 1;
 }
 
-.not-started-playing .play-pause-btn .fa-play {
-    display: inline-block;
-}
-
-.playing .play-pause-btn .fa-pause {
-    display: inline-block;
-}
-
-.not-playing .play-pause-btn .fa-play {
-    display: inline-block;
-}
-
-.completed .play-pause-btn .fa-repeat {
-    display: inline-block;
+@media screen and (min-width:600px) {
+    .not-started-playing .play-pause-btn .fa-play {
+        display: inline-block;
+    }
+    .playing .play-pause-btn .fa-pause {
+        display: inline-block;
+    }
+    .not-playing .play-pause-btn .fa-play {
+        display: inline-block;
+    }
+    .completed .play-pause-btn .fa-repeat {
+        display: inline-block;
+    }
 }

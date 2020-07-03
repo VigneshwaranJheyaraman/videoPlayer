@@ -11,6 +11,10 @@
     background-color: black;
 }
 
+.video-player[data-fullscreen="true"] .play-pause-btn * {
+    opacity: 0 !important;
+}
+
 .video-player .video {
     z-index: var(--videoZ);
 }

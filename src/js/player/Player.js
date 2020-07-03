@@ -5,6 +5,7 @@ class Player {
         this.__playerSrc = playerProps.src ? playerProps.src : "#";
         this.__canPlayVideo = this.__checkVideoPlayable();
         this.__canGoFullScreen = this.__fullScreenAvailable();
+        this.__isPDA = false;
         this.__fullScreenIsEnabled = this.__fullScreenEnabled();
         this.__updateContainerHeight(this.__playerMinHeight);
         this.booleanize = this.booleanize.bind(this);
@@ -20,6 +21,7 @@ class Player {
         this.__updateContainerHeight = this.__updateContainerHeight.bind(this);
         this.subscribe = this.subscribe.bind(this);
         this.unsubscribe = this.unsubscribe.bind(this);
+        this.__checkIsPDA = this.__checkIsPDA.bind(this);
         window.addEventListener("load", this.subscribe);
     }
 
@@ -40,6 +42,10 @@ class Player {
         this.__playerSrc = newSrc;
     }
 
+    get isPDA() {
+        return this.__isPDA;
+    }
+
     get videoPlayable() {
         return this.__canPlayVideo;
     }
@@ -58,6 +64,12 @@ class Player {
 
     __fullScreenEnabled() {
         return this.booleanize(document.fullscreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullScreenElement || document.fullscreenElement);
+    }
+
+    __checkIsPDA() {
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            this.__isPDA = true;
+        }
     }
 
     //go ,exit and toggle full screen
@@ -127,5 +139,6 @@ class Player {
 
     subscribe() {
         this.__enableFullScreenListener();
+        this.__checkIsPDA();
     }
 }
