@@ -299,7 +299,6 @@ class VrajPlayer extends Player {
             this.__playerContainer.addEventListener("mousemove", this.__handleOverlayDisplay);
             this.__playerContainer.addEventListener("mouseout", this.__hideOverlay);
         } else {
-
             this.__slider.seeker.addEventListener("touchstart", this.__startDragging);
             this.__slider.seeker.addEventListener("touchend", this.__stopDragging);
             this.__playerContainer.addEventListener("touchend", this.__stopDragging);
@@ -421,6 +420,8 @@ class VrajPlayer extends Player {
             this.__overlayTimeout.push(setTimeout(() => {
                 this.__hideOverlay();
             }, this.__overlayDisplayTimeout));
+        } else {
+            this.__clearOverlayTimeout();
         }
     }
 
