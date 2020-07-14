@@ -21,3 +21,8 @@
     text-align: center;
     cursor: pointer;
 }
+
+.video-player .disabled {
+    pointer-events: none;
+    opacity: 2;
+}

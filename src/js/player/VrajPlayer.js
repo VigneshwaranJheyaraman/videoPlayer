@@ -9,7 +9,7 @@ class VrajPlayer extends Player {
             buffered: properties.slider.querySelector("#buffer"),
         };
         this.__detailsComponent = this.__playerContainer.querySelector("#details");
-        this.thumbURL = properties.thumbURL;
+        this.__thumbURL = null;
         this.__mediaController = null;
         this.__thumbnailComponent = null;
         this.__controls = {
@@ -92,9 +92,44 @@ class VrajPlayer extends Player {
         this.__clearOverlayTimeout = this.__clearOverlayTimeout.bind(this);
         this.__showOverlay = this.__showOverlay.bind(this);
         this.__hideOverlay = this.__hideOverlay.bind(this);
+        this.__disableSubtitle = this.__disableSubtitle.bind(this);
+        this.thumbURL = properties.thumbURL;
+        this.__disableSubtitle(properties.subtitleURL && properties.subtitleURL.length);
         this.__intializeVideoElementProperties();
         this.__updateVideoSource();
         this.subscribe();
+    }
+
+    set src(newSrc) {
+        super.src = newSrc;
+        this.__updateVideoSource();
+    }
+
+    get thumbURL() {
+        return this.__thumbURL;
+    }
+
+    set thumbURL(thumbURL) {
+        if (thumbURL && thumbURL.length) {
+            this.__thumbURL = thumbURL;
+        }
+    }
+
+    set subtitleURL(subtitleURL) {
+        if (this.__subtitleHandler) {
+            if (subtitleURL && subtitleURL.length) {
+                this.__subtitleHandler.url = subtitleURL;
+                this.__disableSubtitle(true);
+            }
+        }
+    }
+
+    __disableSubtitle(subtitleAvailable = false) {
+        if (!subtitleAvailable) {
+            this.__controls.cc && this.__controls.cc.classList.add("disabled");
+        } else {
+            this.__controls.cc && this.__controls.cc.classList.remove("disabled");
+        }
     }
 
     __updateVideoSource() {
@@ -138,9 +173,9 @@ class VrajPlayer extends Player {
     }
 
     __initializeThumbnail() {
-        if (this.thumbURL) {
+        if (this.__thumbURL) {
             this.__thumbnailComponent = this.__playerContainer.querySelector("#thumbnail");
-            this.__thumbnailComponent.style.backgroundImage = `url(${this.thumbURL})`;
+            this.__thumbnailComponent.style.backgroundImage = `url(${this.__thumbURL})`;
         }
     }
 

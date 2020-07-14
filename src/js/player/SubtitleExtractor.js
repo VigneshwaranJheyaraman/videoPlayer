@@ -37,7 +37,7 @@ class SubtitleExtractor {
     }
     set url(newUrl) {
         this.__subtitleUrl = newUrl;
-        this.__initializeSubtitleDictionary();
+        this.init();
     }
 
     __fetchSubtitleFromURL() {
