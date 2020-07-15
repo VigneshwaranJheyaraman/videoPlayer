@@ -93,6 +93,7 @@ class VrajPlayer extends Player {
         this.__showOverlay = this.__showOverlay.bind(this);
         this.__hideOverlay = this.__hideOverlay.bind(this);
         this.__disableSubtitle = this.__disableSubtitle.bind(this);
+        this.updateSrc = this.updateSrc.bind(this);
         this.thumbURL = properties.thumbURL;
         this.__disableSubtitle(properties.subtitleURL && properties.subtitleURL.length);
         this.__intializeVideoElementProperties();
@@ -100,7 +101,7 @@ class VrajPlayer extends Player {
         this.subscribe();
     }
 
-    set src(newSrc) {
+    updateSrc(newSrc) {
         super.src = newSrc;
         this.__updateVideoSource();
     }
@@ -113,6 +114,10 @@ class VrajPlayer extends Player {
         if (thumbURL && thumbURL.length) {
             this.__thumbURL = thumbURL;
         }
+    }
+
+    get subtitleURL() {
+        return (this.__subtitleHandler && this.__subtitleHandler.url) || undefined;
     }
 
     set subtitleURL(subtitleURL) {
