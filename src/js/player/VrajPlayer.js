@@ -44,7 +44,6 @@ class VrajPlayer extends Player {
             83: (e) => this.__toggleSubsComponentDisplay()
         };
         this.__overlayDisplayTimeout = 1e3 * 4;
-        this.__overlayTimeout = [];
 
         this.__updateVideoSource = this.__updateVideoSource.bind(this);
         this.__intializeVideoElementProperties = this.__intializeVideoElementProperties.bind(this);
@@ -88,8 +87,6 @@ class VrajPlayer extends Player {
         this.__enableSeekListeners = this.__enableSeekListeners.bind(this);
         this.__removeSeekListeners = this.__removeSeekListeners.bind(this);
         this.__videoInitializing = this.__videoInitializing.bind(this);
-        this.__handleOverlayDisplay = this.__handleOverlayDisplay.bind(this);
-        this.__clearOverlayTimeout = this.__clearOverlayTimeout.bind(this);
         this.__showOverlay = this.__showOverlay.bind(this);
         this.__hideOverlay = this.__hideOverlay.bind(this);
         this.__disableSubtitle = this.__disableSubtitle.bind(this);
@@ -346,15 +343,16 @@ class VrajPlayer extends Player {
             this.__slider.seeker.addEventListener("mouseup", this.__stopDragging);
             this.__playerContainer.addEventListener("mouseup", this.__stopDragging);
             this.__playerContainer.addEventListener("mousemove", this.seek);
-            this.__playerContainer.addEventListener("mousemove", this.__handleOverlayDisplay);
-            this.__playerContainer.addEventListener("mouseout", this.__hideOverlay);
+            this.__slider.self.addEventListener("mouseenter", this.__showOverlay);
+            this.__slider.self.addEventListener("mouseleave", this.__hideOverlay);
+            this.__playerContainer.addEventListener("mouseenter", this.__showOverlay);
+            this.__playerContainer.addEventListener("mouseleave", this.__hideOverlay);
         } else {
             this.__slider.seeker.addEventListener("touchstart", this.__startDragging);
             this.__slider.seeker.addEventListener("touchend", this.__stopDragging);
             this.__playerContainer.addEventListener("touchend", this.__stopDragging);
             this.__playerContainer.addEventListener("touchcancel", this.__stopDragging);
             this.__playerContainer.addEventListener("touchmove", this.seek);
-            this.__playerContainer.addEventListener("touchmove", this.__handleOverlayDisplay);
         }
     }
 
@@ -364,7 +362,10 @@ class VrajPlayer extends Player {
             this.__slider.seeker.removeEventListener("mouseup", this.__stopDragging);
             this.__playerContainer.removeEventListener("mouseup", this.__stopDragging);
             this.__playerContainer.removeEventListener("mousemove", this.seek);
-            this.__playerContainer.removeEventListener("mouseout", this.__hideOverlay);
+            this.__slider.self.removeEventListener("mouseenter", this.__showOverlay);
+            this.__slider.self.removeEventListener("mouseleave", this.__hideOverlay);
+            this.__playerContainer.removeEventListener("mouseenter", this.__showOverlay);
+            this.__playerContainer.removeEventListener("mouseleave", this.__hideOverlay);
         } else {
             this.__slider.seeker.removeEventListener("touchstart", this.__startDragging);
             this.__slider.seeker.removeEventListener("touchend", this.__stopDragging);
@@ -441,24 +442,9 @@ class VrajPlayer extends Player {
         this.__overlayControls.self.querySelector(".fa-exclamation-triangle").style.opacity = 0;
     }
 
-    __handleOverlayDisplay(e) {
-        var query = e.target.id ? e.target.id : Object.assign([], e.target.classList).map(v => "." + v).join(" ");
-        this.__toggleOverlay();
-        if (this.__playerContainer.querySelector(".features .extras " + query)) {
-            this.__clearOverlayTimeout();
-        }
-    }
-
     __updateFullScreenState() {
         super.__updateFullScreenState();
         this.__mediaController && this.__mediaController.__updatePositionOffset();
-    }
-
-    __clearOverlayTimeout() {
-        this.__overlayTimeout.length > 0 && this.__overlayTimeout.forEach(timeout => {
-            clearTimeout(timeout);
-        });
-        this.__overlayTimeout = [];
     }
 
     __showOverlay() {
@@ -471,13 +457,9 @@ class VrajPlayer extends Player {
 
     __toggleOverlay() {
         this.__showOverlay();
-        if (!this.__mediaController.isSeeking) {
-            this.__overlayTimeout.push(setTimeout(() => {
-                this.__hideOverlay();
-            }, this.__overlayDisplayTimeout));
-        } else {
-            this.__clearOverlayTimeout();
-        }
+        setTimeout(() => {
+            this.__hideOverlay();
+        }, this.__overlayDisplayTimeout)
     }
 
     __initVideoControlsEvents() {
@@ -509,7 +491,6 @@ class VrajPlayer extends Player {
 
     __startDragging() {
         this.__mediaController.isSeeking = true;
-        this.__clearOverlayTimeout();
     }
 
     __stopDragging() {
