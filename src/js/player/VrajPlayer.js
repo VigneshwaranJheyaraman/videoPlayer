@@ -104,7 +104,7 @@ class VrajPlayer extends Player {
     updateSrc(newSrc) {
         super.src = newSrc;
         this.__mediaController && this.__mediaController.initProps();
-        this.__updateUIProgress();
+        this.__mediaController && this.__updateUIProgress();
         this.__updateVideoSource();
         this.__initPlayerUI();
     }
@@ -116,6 +116,7 @@ class VrajPlayer extends Player {
     set thumbURL(thumbURL) {
         if (thumbURL && thumbURL.length) {
             this.__thumbURL = thumbURL;
+            this.__initializeThumbnail();
         }
     }
 

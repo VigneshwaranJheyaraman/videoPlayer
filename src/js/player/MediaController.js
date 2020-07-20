@@ -121,7 +121,7 @@ class MediaController {
         this.__lastWatchTime = 0;
         this.__lastProgressPixel = 0;
         this.__currentlyPlaying = false;
-        this.__buffered = { lastTime: 0, progressPixel: 0, progressPercent: 0, cb: props.bufferCB };
+        this.__buffered = Object.assign({}, this.__buffered, { lastTime: 0, progressPixel: 0, progressPercent: 0 });
         this.__watched = false;
         this.__positionOffset = { left: 0, top: 0 };
         this.__playbackOffset = 0.25;
