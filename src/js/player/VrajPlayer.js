@@ -103,7 +103,10 @@ class VrajPlayer extends Player {
 
     updateSrc(newSrc) {
         super.src = newSrc;
+        this.__mediaController && this.__mediaController.initProps();
+        this.__updateUIProgress();
         this.__updateVideoSource();
+        this.__initPlayerUI();
     }
 
     get thumbURL() {
@@ -124,6 +127,7 @@ class VrajPlayer extends Player {
         if (this.__subtitleHandler) {
             if (subtitleURL && subtitleURL.length) {
                 this.__subtitleHandler.url = subtitleURL;
+                this.__subtitleEnabled = false;
                 this.__disableSubtitle(true);
             }
         }
@@ -221,6 +225,7 @@ class VrajPlayer extends Player {
         } else {
             this.hideLoading();
             this.__hideError();
+            this.__updateUIProgress();
             this.__playerContainer.classList.add("not-started-playing");
         }
     }
@@ -230,6 +235,10 @@ class VrajPlayer extends Player {
             var customVideo = document.createElement("video");
             customVideo.addEventListener("error", () => {
                 this.__showError();
+                customVideo.remove();
+            });
+            customVideo.addEventListener("load", () => {
+                this.__hideError();
                 customVideo.remove();
             });
             customVideo.src = this.src;
@@ -439,6 +448,11 @@ class VrajPlayer extends Player {
         }
     }
 
+    __updateFullScreenState() {
+        super.__updateFullScreenState();
+        this.__mediaController && this.__mediaController.__updatePositionOffset();
+    }
+
     __clearOverlayTimeout() {
         this.__overlayTimeout.length > 0 && this.__overlayTimeout.forEach(timeout => {
             clearTimeout(timeout);
@@ -487,6 +501,9 @@ class VrajPlayer extends Player {
         this.__playerElement.addEventListener("stalled", this.__showError);
         this.__playerElement.addEventListener("abort", this.__showError);
         window.addEventListener("keydown", this.__handleKeyPress);
+        window.addEventListener("orientationchange", () => {
+            this.__mediaController && this.__mediaController.__updatePositionOffset();
+        });
     }
 
     __startDragging() {
@@ -539,5 +556,8 @@ class VrajPlayer extends Player {
         this.__playerElement.removeEventListener("stalled", this.__showError);
         this.__playerElement.removeEventListener("abort", this.__showError);
         window.removeEventListener("keydown", this.__handleKeyPress);
+        window.removeEventListener("orientationchange", () => {
+            this.__mediaController && this.__mediaController.__updatePositionOffset();
+        });
     }
 }

@@ -19,6 +19,7 @@ class MediaController {
         this.isMuted = this.__checkIsMuted;
         this.__progressCB = props.progressCB ? props.progressCB : null;
         this.__startedSeeking = false;
+        this.initProps = this.initProps.bind(this);
         this.__updatePositionOffset = this.__updatePositionOffset.bind(this);
         this.__calculateDragProgress = this.__calculateDragProgress.bind(this);
         this.__didCompletedWatching = this.__didCompletedWatching.bind(this);
@@ -113,6 +114,22 @@ class MediaController {
     }
     set completedWatching(completed) {
         this.__watched = completed;
+    }
+
+    initProps() {
+        this.__updateProgressPercent = 0;
+        this.__lastWatchTime = 0;
+        this.__lastProgressPixel = 0;
+        this.__currentlyPlaying = false;
+        this.__buffered = { lastTime: 0, progressPixel: 0, progressPercent: 0, cb: props.bufferCB };
+        this.__watched = false;
+        this.__positionOffset = { left: 0, top: 0 };
+        this.__playbackOffset = 0.25;
+        this.__maxPlayBack = 3.0;
+        this.__constPlayBack = 1.0;
+        this.__skipOffset = 3;
+        this.__volumeOffset = 0.1;
+        this.__videoVolume = 1;
     }
 
     __updatePositionOffset() {
