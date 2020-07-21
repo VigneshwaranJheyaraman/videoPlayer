@@ -6,5 +6,6 @@ var videoPlayer = new VrajPlayer({
     thumbURL: "https://images-na.ssl-images-amazon.com/images/I/816PXY-c-nL._RI_.jpg",
     slider: document.querySelector(".video-player .features .extras .slider"),
     controls: document.querySelector(".video-player .features .extras .controls"),
-    overlay: document.querySelector(".play-pause-btn")
+    overlay: document.querySelector(".play-pause-btn"),
+    features: document.querySelector(".features")
 });
