@@ -51,6 +51,7 @@ class VrajPlayer extends Player {
         };
         this.__overlayDisplayTimeout = 1e3 * 4;
 
+        this.__landscapePotraitScreenToggler = this.__landscapePotraitScreenToggler.bind(this);
         this.__handleSliderEvents = this.__handleSliderEvents.bind(this);
         this.__updateVideoSource = this.__updateVideoSource.bind(this);
         this.__intializeVideoElementProperties = this.__intializeVideoElementProperties.bind(this);
@@ -406,7 +407,19 @@ class VrajPlayer extends Player {
             this.__playerContainer.addEventListener("touchend", this.__stopDragging);
             this.__playerContainer.addEventListener("touchcancel", this.__stopDragging);
             this.__playerContainer.addEventListener("touchmove", this.seek);
+            window.addEventListener("orientationchange", this.__landscapePotraitScreenToggler);
         }
+    }
+
+    __landscapePotraitScreenToggler(e) {
+        if (window.outerWidth > window.outerHeight) {
+            //landscape
+            this.__goFullScreen();
+        } else {
+            //potrait
+            this.__exitFullScreen();
+        }
+        this.__updateFullScreenState();
     }
 
     __removeSeekListeners() {
@@ -425,6 +438,7 @@ class VrajPlayer extends Player {
             this.__playerContainer.removeEventListener("touchend", this.__stopDragging);
             this.__playerContainer.removeEventListener("touchcancel", this.__stopDragging);
             this.__playerContainer.removeEventListener("touchmove", this.seek);
+            window.removeEventListener("orientationchange", this.__landscapePotraitScreenToggler);
         }
     }
 
