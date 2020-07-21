@@ -19,6 +19,8 @@ class MediaController {
         this.isMuted = this.__checkIsMuted;
         this.__progressCB = props.progressCB ? props.progressCB : null;
         this.__startedSeeking = false;
+
+        this.updateSliderWidth = this.updateSliderWidth.bind(this);
         this.initProps = this.initProps.bind(this);
         this.__updatePositionOffset = this.__updatePositionOffset.bind(this);
         this.__calculateDragProgress = this.__calculateDragProgress.bind(this);
@@ -109,6 +111,12 @@ class MediaController {
         }
     }
 
+    updateSliderWidth(newWidth) {
+        if (newWidth && newWidth > 0) {
+            this.__sliderWidth = newWidth;
+        }
+    }
+
     get completedWatching() {
         return this.__watched;
     }
@@ -133,8 +141,8 @@ class MediaController {
     }
 
     __updatePositionOffset() {
-        this.__positionOffset.left += window.pageXOffset + document.documentElement.clientLeft;
-        this.__positionOffset.top += window.pageYOffset + document.documentElement.clientTop;
+        this.__positionOffset.left = window.pageXOffset + document.documentElement.clientLeft;
+        this.__positionOffset.top = window.pageYOffset + document.documentElement.clientTop;
     }
 
     __calculateDragProgress(event) {

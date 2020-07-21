@@ -51,6 +51,7 @@ class VrajPlayer extends Player {
         };
         this.__overlayDisplayTimeout = 1e3 * 4;
 
+        this.__handleSliderEvents = this.__handleSliderEvents.bind(this);
         this.__updateVideoSource = this.__updateVideoSource.bind(this);
         this.__intializeVideoElementProperties = this.__intializeVideoElementProperties.bind(this);
         this.__initializeMediaController = this.__initializeMediaController.bind(this);
@@ -496,7 +497,7 @@ class VrajPlayer extends Player {
 
     __updateFullScreenState() {
         super.__updateFullScreenState();
-        this.__mediaController && this.__mediaController.__updatePositionOffset();
+        this.__handleSliderEvents();
     }
 
     __showOverlay() {
@@ -536,10 +537,14 @@ class VrajPlayer extends Player {
         this.__playerElement.addEventListener("error", this.__showError);
         this.__playerElement.addEventListener("stalled", this.__showError);
         this.__playerElement.addEventListener("abort", this.__showError);
-        window.addEventListener("keypress", this.__handleKeyPress);
-        window.addEventListener("orientationchange", () => {
-            this.__mediaController && this.__mediaController.__updatePositionOffset();
-        });
+        window.addEventListener("resize", this.__handleSliderEvents);
+        window.addEventListener("keyup", this.__handleKeyPress);
+        window.addEventListener("orientationchange", this.__handleSliderEvents);
+    }
+
+    __handleSliderEvents() {
+        this.__mediaController && this.__mediaController.__updatePositionOffset();
+        this.__mediaController && this.__mediaController.updateSliderWidth(this.__slider.seeker.parentElement.offsetWidth);
     }
 
     __startDragging() {
@@ -591,9 +596,8 @@ class VrajPlayer extends Player {
         this.__playerElement.removeEventListener("error", this.__showError);
         this.__playerElement.removeEventListener("stalled", this.__showError);
         this.__playerElement.removeEventListener("abort", this.__showError);
-        window.removeEventListener("keypress", this.__handleKeyPress);
-        window.removeEventListener("orientationchange", () => {
-            this.__mediaController && this.__mediaController.__updatePositionOffset();
-        });
+        window.removeEventListener("resize", this.__handleSliderEvents);
+        window.removeEventListener("keyup", this.__handleKeyPress);
+        window.removeEventListener("orientationchange", this.__handleSliderEvents);
     }
 }
