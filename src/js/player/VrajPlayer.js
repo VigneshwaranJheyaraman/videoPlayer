@@ -417,11 +417,13 @@ class VrajPlayer extends Player {
             if (e.target.orientation && Math.abs(e.target.orientation) === 90) {
                 this.isFullScreen = true;
             } else {
-                this.__playerContainer && this.__playerContainer.blur();
                 this.isFullScreen = false;
             }
         }
         this.__controls.fullScreen && this.__controls.fullScreen.click();
+        if (!this.isFullScreen) {
+            this.__playerContainer && this.__playerContainer.blur();
+        }
         this.__updateFullScreenState();
     }
 
