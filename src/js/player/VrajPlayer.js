@@ -401,6 +401,7 @@ class VrajPlayer extends Player {
             this.__featureZone && this.__featureZone.addEventListener("mouseleave", this.__hideOverlay);
             this.__playerContainer.addEventListener("mouseenter", this.__showOverlay);
             this.__playerContainer.addEventListener("mouseleave", this.__hideOverlay);
+            this.__playerContainer.addEventListener("dblclick", this.__jumpVideoEventHandler);
         } else {
             this.__slider.seeker.addEventListener("touchstart", this.__startDragging);
             this.__slider.seeker.addEventListener("touchend", this.__stopDragging);
@@ -412,13 +413,14 @@ class VrajPlayer extends Player {
     }
 
     __landscapePotraitScreenToggler(e) {
-        if (e.target) {
+        if (e.target && this.__controls.fullScreen) {
             if (e.target.orientation && Math.abs(e.target.orientation) === 90) {
-                this.__goFullScreen();
+                this.isFullScreen = true;
             } else {
-                this.__exitFullScreen();
+                this.isFullScreen = false;
             }
         }
+        this.__controls.fullScreen && this.__controls.fullScreen.click();
         this.__updateFullScreenState();
     }
 
@@ -432,6 +434,7 @@ class VrajPlayer extends Player {
             this.__featureZone && this.__featureZone.removeEventListener("mouseleave", this.__hideOverlay);
             this.__playerContainer.removeEventListener("mouseenter", this.__showOverlay);
             this.__playerContainer.removeEventListener("mouseleave", this.__hideOverlay);
+            this.__playerContainer.removeEventListener("dblclick", this.__jumpVideoEventHandler);
         } else {
             this.__slider.seeker.removeEventListener("touchstart", this.__startDragging);
             this.__slider.seeker.removeEventListener("touchend", this.__stopDragging);
@@ -543,7 +546,6 @@ class VrajPlayer extends Player {
         this.__controls.cc.addEventListener("click", this.__toggleSubtitle);
         this.__controls.download.addEventListener("click", this.__downloadVideo);
         this.__playerElement.addEventListener("ended", this.__videoWatchingCompleted);
-        this.__playerContainer.addEventListener("dblclick", this.__jumpVideoEventHandler);
         this.__playerElement.addEventListener("seeking", this.showSeekingDetails);
         this.__playerElement.addEventListener("ratechange", this.showTimeDetails);
         this.__playerElement.addEventListener("loadeddata", this.__initPlayerUI);
