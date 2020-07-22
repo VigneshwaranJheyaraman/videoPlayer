@@ -412,12 +412,12 @@ class VrajPlayer extends Player {
     }
 
     __landscapePotraitScreenToggler(e) {
-        if (window.outerWidth > window.outerHeight) {
-            //landscape
-            this.__goFullScreen();
-        } else {
-            //potrait
-            this.__exitFullScreen();
+        if (e.target) {
+            if (e.target.orientation && Math.abs(e.target.orientation) === 90) {
+                this.__goFullScreen();
+            } else {
+                this.__exitFullScreen();
+            }
         }
         this.__updateFullScreenState();
     }

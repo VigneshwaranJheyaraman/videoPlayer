@@ -76,22 +76,30 @@ class Player {
     __goFullScreen() {
         this.isFullScreen = this.__fullScreenEnabled();
         if (this.__playerContainer && !this.isFullScreen) {
-            if (this.__playerContainer.requestFullscreen) this.__playerContainer.requestFullscreen();
-            else if (this.__playerContainer.mozRequestFullScreen) this.__playerContainer.mozRequestFullScreen();
-            else if (this.__playerContainer.webkitRequestFullScreen) this.__playerContainer.webkitRequestFullScreen();
-            else if (this.__playerContainer.msRequestFullscreen) this.__playerContainer.msRequestFullscreen();
-            this.__updateFullScreenState();
+            try {
+                if (this.__playerContainer.requestFullscreen) this.__playerContainer.requestFullscreen();
+                else if (this.__playerContainer.mozRequestFullScreen) this.__playerContainer.mozRequestFullScreen();
+                else if (this.__playerContainer.webkitRequestFullScreen) this.__playerContainer.webkitRequestFullScreen();
+                else if (this.__playerContainer.msRequestFullscreen) this.__playerContainer.msRequestFullscreen();
+                this.__updateFullScreenState();
+            } catch (err) {
+                console.error("Erro going full screen", err);
+            }
         }
     }
 
     __exitFullScreen() {
         this.isFullScreen = this.__fullScreenEnabled();
         if (document && this.isFullScreen) {
-            if (document.exitFullscreen) document.exitFullscreen();
-            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-            else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
-            else if (document.msExitFullscreen) document.msExitFullscreen();
-            this.__updateFullScreenState();
+            try {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+                else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+                this.__updateFullScreenState();
+            } catch (err) {
+                console.error("Error exiting full screen ", err);
+            }
         }
     }
 
