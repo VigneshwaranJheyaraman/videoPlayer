@@ -413,7 +413,7 @@ class VrajPlayer extends Player {
     }
 
     __landscapePotraitScreenToggler(e) {
-        if (e.target && this.__controls.fullScreen) {
+        if (e.target && this.__controls.fullScreen && this.__playerContainer && !this.__playerContainer.classList.contains("not-started-playing")) {
             if (e.target.orientation && Math.abs(e.target.orientation) === 90) {
                 this.isFullScreen = true;
             } else {
@@ -568,9 +568,11 @@ class VrajPlayer extends Player {
     }
 
     __stopDragging() {
-        this.__mediaController.isSeeking = false;
-        this.__playerElement.currentTime = this.__mediaController.lastTime;
-        this.play();
+        if (this.__mediaController.isSeeking) {
+            this.__mediaController.isSeeking = false;
+            this.__playerElement.currentTime = this.__mediaController.lastTime;
+            this.play();
+        }
     }
 
     __videoWatchingCompleted() {
