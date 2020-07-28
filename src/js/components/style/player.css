@@ -1,0 +1,9 @@
+.player-container {
+    --playerContainerMinHeight: 500px;
+    --videoIndex: 1;
+    --featuresIndex: 2;
+    --overlayIndex: 3;
+    --thumbnailIndex: 4;
+    min-height: var(--playerContainerMinHeight);
+    position: relative;
+}

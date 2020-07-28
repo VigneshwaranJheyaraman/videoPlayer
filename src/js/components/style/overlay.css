@@ -1,0 +1,44 @@
+.player-container .player-overlay {
+    --icon-wd: 80px;
+    --icon-hg: 80px;
+    --bord-wd: calc(var(--icon-wd) / 2);
+    --bord-hg: calc(var(--icon-hg) / 2);
+    display: none;
+    width: 100%;
+    height: 100%;
+    z-index: var(--overlayIndex);
+}
+
+.player-container .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+
+/*icons*/
+
+.player-container .player-overlay .icon {
+    width: 0;
+    height: var(--icon-hg);
+    margin: auto;
+    transition: all 0.2s;
+    border-style: solid;
+    box-sizing: border-box;
+}
+
+
+/*Play icon*/
+
+.player-container .player-overlay .play {
+    border-width: var(--bord-wd) 0 var(--bord-wd) var(--icon-wd);
+    border-color: transparent transparent transparent black;
+}
+
+.player-container .player-overlay .pause {
+    border-width: 0 0 0 var(--bord-wd);
+    border-color: transparent transparent transparent black;
+    border-style: double;
+}
