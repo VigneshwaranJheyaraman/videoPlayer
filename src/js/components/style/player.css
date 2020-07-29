@@ -1,9 +1,15 @@
 .player-container {
     --playerContainerMinHeight: 500px;
     --videoIndex: 1;
-    --featuresIndex: 2;
-    --overlayIndex: 3;
-    --thumbnailIndex: 4;
+    --extrasIndex: 5;
+    --overlayIndex: 4;
+    --thumbnailIndex: 3;
+    --borderRadius: 15px;
     min-height: var(--playerContainerMinHeight);
     position: relative;
+    border-radius: var(--borderRadius);
+}
+
+.player-container * {
+    transition: all 0.25s;
 }
