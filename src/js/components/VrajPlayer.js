@@ -1,69 +1,78 @@
 (function(definition) {
     definition(window);
 })(function(globalVariable) {
-    const PLAYER_STYLES = {
-        cssFiles: ["/player.css", "/overlay.css", "/actions.css"],
-        playerContainer: {
-            class: ["player-container", "player-not-started"],
-            id: "container"
-        },
-        overlay: {
-            class: ["overlay", "player-overlay"]
-        },
-        overlayIcon: {
-            id: "playerOverlayIcon",
-            class: ["overlay", "icon", "play"],
-            controls: {
-                play: "play",
-                pause: "pause",
-                stop: "stop"
+    const
+        PLAYER_FUNCTIONS = {
+            play: function() {
+                //show pause btn
+                this.playerOverlayIcon.pause();
+                this.playerContainer && this.playerContainer.classList.remove("player-not-started");
+            },
+            pause: function() {
+                //show play btn
+                this.playerOverlayIcon.play();
+            },
+            stop: function() {
+                this.playerOverlayIcon.stop();
             }
         },
-        thumbnail: {
-            id: "playerPoster",
-            class: ["overlay", "thumbnail"]
-        },
-        extras: {
-            class: ["overlay", "extras"],
-            slider: {
-                id: "videoSlider",
-                class: ["slider"]
+        PLAYER_STYLES = {
+            cssFiles: ["/player.css", "/overlay.css", "/actions.css"],
+            playerContainer: {
+                class: ["player-container", "player-not-started"],
+                id: "container"
             },
-            cc: {
-                id: "cc",
-                class: ["sub"]
+            overlay: {
+                class: ["overlay", "player-overlay"]
             },
-            controls: {
-                class: ["flex", "controls"],
-                children: [{
-                        class: "fa fa-2x fa-play",
-                        id: "playBtn",
-                        click: function() {
-                            this.pause();
-                        }
-                    },
-                    {
-                        class: "fa fa-2x fa-pause",
-                        id: "pauseBtn",
-                        click: function() {
-                            this.play();
-                        }
-                    },
-                    {
-                        class: "fa fa-2x fa-stop",
-                        id: "stopBtn",
-                        click: function() {
-                            this.stop();
-                        }
-                    },
-                    {
-                        class: "fa fa-2x fa-window-maximize",
-                        id: "fullScreenBtn"
-                    },
-                ]
+            overlayIcon: {
+                id: "playerOverlayIcon",
+                class: ["overlay", "icon", "play"],
+                controls: {
+                    play: "play",
+                    pause: "pause",
+                    stop: "stop"
+                }
+            },
+            thumbnail: {
+                id: "playerPoster",
+                class: ["overlay", "thumbnail"]
+            },
+            extras: {
+                class: ["overlay", "extras"],
+                slider: {
+                    id: "videoSlider",
+                    class: ["slider"]
+                },
+                cc: {
+                    id: "cc",
+                    class: ["sub"]
+                },
+                controls: {
+                    class: ["flex", "controls"],
+                    children: [{
+                            class: "fa fa-2x fa-play",
+                            id: "playBtn",
+                            click: PLAYER_FUNCTIONS.play
+                        },
+                        {
+                            class: "fa fa-2x fa-pause",
+                            id: "pauseBtn",
+                            click: PLAYER_FUNCTIONS.pause
+                        },
+                        {
+                            class: "fa fa-2x fa-stop",
+                            id: "stopBtn",
+                            click: PLAYER_FUNCTIONS.stop
+                        },
+                        {
+                            class: "fa fa-2x fa-window-maximize",
+                            id: "fullScreenBtn"
+                        },
+                    ]
+                }
             }
-        }
-    }
+        };
 
     //Defining the Component
     class VrajPlayer extends HTMLElement {
@@ -83,11 +92,14 @@
 
         connectedCallback() {
             this.init();
+            //init overlayIcon callback
+            initOverlayIconEvents.call(this);
         }
 
         static get attr() {
             return {
-                thumbnail: "thumbnail"
+                thumbnail: "thumbnail",
+                player_src: "prc"
             };
         }
 
@@ -105,6 +117,7 @@
             }
         }
 
+        //player attributes
         get thumbnail() {
             return this.getAttribute(VrajPlayer.attr.thumbnail);
         }
@@ -120,6 +133,17 @@
             }
         }
 
+        get prc() {
+            return this.prc;
+        }
+
+        set prc(newSrc) {
+            if (newSrc && newSrc.length && newSrc !== "undefined") {
+                this.prc = newSrc;
+            }
+        }
+
+        //player attr ends here
         get playerContainer() {
             return this.__shadowContainer.querySelector(`#${PLAYER_STYLES.playerContainer.id}`);
         }
@@ -145,26 +169,28 @@
             this.__shadowContainer.appendChild(renderPlayerContainer({ thumbUrl: this.thumbnail }));
         }
 
-        play() {
-            this.playerOverlayIcon.play();
-        }
+        initOverlayIconEvents() {}
 
         togglePlayPause() {
             if (this.playerOverlayIcon) {
                 if (this.playerOverlayIcon.classList.contains(PLAYER_STYLES.overlayIcon.controls.pause)) {
-                    this.play();
+                    PLAYER_FUNCTIONS.pause.call(this);
                 } else {
-                    this.pause();
+                    PLAYER_FUNCTIONS.play.call(this);
                 }
             }
         }
 
+        play() {
+            PLAYER_FUNCTIONS.play.call(this);
+        }
+
         pause() {
-            this.playerOverlayIcon.pause();
+            PLAYER_FUNCTIONS.pause.call(this);
         }
 
         stop() {
-            this.playerOverlayIcon.stop();
+            PLAYER_FUNCTIONS.stop.call(this);
         }
 
         controls() {
@@ -177,6 +203,10 @@
 
     function generateClass(listOfClass) {
         return listOfClass.map(cls => cls.indexOf(".") !== -1 ? cls.replace(".", "") : cls).join(" ");
+    }
+
+    function initOverlayIconEvents() {
+        this.playerOverlayIcon && this.playerOverlayIcon.addEventListener("click", this.togglePlayPause);
     }
 
     function renderStyle(props) {
@@ -290,6 +320,12 @@
         extras.appendChild(renderSlider());
         extras.appendChild(renderControls());
         return extras;
+    }
+
+    function renderVideo(playerURL = "#", attrs) {
+        var video = document.createElement("video");
+
+
     }
 
     if (globalVariable.customElements) {

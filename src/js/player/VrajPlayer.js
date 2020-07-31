@@ -44,25 +44,9 @@
             subscribeEvents();
         }
 
-        function unsubscribeEvents() {
-            if (__player.container) {
-                var overlayIcon = __player.container.playerOverlayIcon;
-                overlayIcon && overlayIcon.removeEventListener("click", __player.container.togglePlayPause);
-                __player.controls && __player.controls.forEach(control => {
-                    control.elem && control.click && control.elem.removeEventListener("click", control.click);
-                });
-            }
-        }
+        function unsubscribeEvents() {}
 
-        function subscribeEvents() {
-            if (__player.container) {
-                var overlayIcon = __player.container.playerOverlayIcon;
-                overlayIcon && overlayIcon.addEventListener("click", __player.container.togglePlayPause);
-                __player.controls && __player.controls.forEach(control => {
-                    control.elem && control.click && control.elem.addEventListener("click", control.click);
-                });
-            }
-        }
+        function subscribeEvents() {}
 
         function init() {
             propsInit(props);

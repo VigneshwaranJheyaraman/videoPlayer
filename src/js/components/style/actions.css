@@ -1,4 +1,4 @@
-.player-hovered .player-overlay,
+.player-container:hover .player-overlay,
 .player-not-started .player-overlay,
 .player-not-playing .player-overlay {
     display: block;
