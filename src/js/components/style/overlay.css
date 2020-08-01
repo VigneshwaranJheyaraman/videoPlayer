@@ -27,8 +27,6 @@
 /*extras*/
 
 .player-container .extras {
-    --slider-hg: 10px;
-    --controls-hg: 40px;
     --slider-width: 95%;
     --slider-thumb-wd: 25px;
     --slider-border-radius: 5px;

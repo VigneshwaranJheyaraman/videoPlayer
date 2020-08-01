@@ -7,6 +7,10 @@
                 //show pause btn
                 this.playerOverlayIcon.pause();
                 this.playerContainer && this.playerContainer.classList.remove("player-not-started");
+                //hide thumbnail
+                if (this.thumbnailContainer) {
+                    this.thumbnailContainer.style.opacity = 0;
+                }
             },
             pause: function() {
                 //show play btn
@@ -17,7 +21,7 @@
             }
         },
         PLAYER_STYLES = {
-            cssFiles: ["/player.css", "/overlay.css", "/actions.css"],
+            cssFiles: ["/player.css", "/overlay.css", "/actions.css", "/video.css"],
             playerContainer: {
                 class: ["player-container", "player-not-started"],
                 id: "container"
@@ -71,6 +75,9 @@
                         },
                     ]
                 }
+            },
+            video: {
+                class: ["overlay"]
             }
         };
 
@@ -78,7 +85,7 @@
     class VrajPlayer extends HTMLElement {
         constructor() {
             super();
-            this.__shadowContainer = this.attachShadow({ mode: 'open' });
+            this.__shadowContainer = this.attachShadow({ mode: 'closed' });
             this.__cssRoot = "../js/components/style";
             this.init = this.init.bind(this);
             this.play = this.play.bind(this);
@@ -134,12 +141,13 @@
         }
 
         get prc() {
-            return this.prc;
+            return this.getAttribute(VrajPlayer.attr.player_src);
         }
 
         set prc(newSrc) {
             if (newSrc && newSrc.length && newSrc !== "undefined") {
-                this.prc = newSrc;
+                this.setAttribute(VrajPlayer.attr.player_src, newSrc);
+                this.video.updateSource.call(this, newSrc);
             }
         }
 
@@ -156,6 +164,14 @@
             return this.playerContainer.__overlay.__icon;
         }
 
+        get video() {
+            return this.playerContainer.__video;
+        }
+
+        get isSeperateAudio() {
+            return this.video && this.video.muted;
+        }
+
         init() {
             PLAYER_STYLES.cssFiles.forEach(fileName => {
                 this.__shadowContainer.appendChild(renderStyle({ href: `${this.__cssRoot}${fileName}` }));
@@ -166,7 +182,16 @@
                 integrity: "sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN",
                 crossorigin: "anonymous"
             }));
-            this.__shadowContainer.appendChild(renderPlayerContainer({ thumbUrl: this.thumbnail }));
+
+            this.__shadowContainer.appendChild(
+                renderPlayerContainer.call(this, {
+                    thumbUrl: this.thumbnail,
+                    video: {
+                        src: this.prc ? this.prc : "#",
+
+                    }
+                })
+            );
         }
 
         initOverlayIconEvents() {}
@@ -195,7 +220,7 @@
 
         controls() {
             return PLAYER_STYLES.extras.controls.children.map(control => {
-                return { elem: this.__shadowContainer.getElementById(control.id), click: control.click && control.click.bind(this) }
+                return { elem: this.__shadowContainer.getElementById(control.id) }
             });
         }
 
@@ -229,9 +254,12 @@
         var thumbnail = renderThumbnail(props.thumbUrl);
         playerContainer.__thumbnail = thumbnail;
         playerContainer.appendChild(thumbnail);
-        var extras = renderExtras();
+        var extras = renderExtras.call(this);
         playerContainer.__extras = extras;
         playerContainer.appendChild(extras);
+        var video = renderVideo(props.video, props.video.src);
+        playerContainer.__video = video;
+        playerContainer.appendChild(video);
         return playerContainer;
     }
 
@@ -304,34 +332,50 @@
                 var icon = document.createElement("i");
                 icon.setAttribute("class", props.class);
                 icon.setAttribute("id", props.id);
+                props.click && icon.addEventListener("click", props.click.bind(this));
                 return icon;
             }
             var controls = document.createElement("div");
             controls.setAttribute("class", generateClass(PLAYER_STYLES.extras.controls.class));
             PLAYER_STYLES.extras.controls.children.forEach(child => {
-                controls.appendChild(renderControlIcons(child));
+                controls.appendChild(renderControlIcons.call(this, child));
             });
             return controls;
         }
-
         var extras = document.createElement("div");
         extras.setAttribute("class", generateClass(PLAYER_STYLES.extras.class));
         extras.appendChild(renderSubtitle());
         extras.appendChild(renderSlider());
-        extras.appendChild(renderControls());
+        extras.appendChild(renderControls.call(this));
         return extras;
     }
 
-    function renderVideo(playerURL = "#", attrs) {
+    function renderVideo(attrs = {}, src = "#") {
+        function updateSource(newSrc) {
+            this.video.__source.src = newSrc;
+        }
         var video = document.createElement("video");
-
-
+        video.setAttribute("class", generateClass(PLAYER_STYLES.video.class));
+        if (attrs.a && attrs.a.src) {
+            video.muted = true;
+            var audio = document.createElement("audio");
+            video.__audio = audio;
+            Object.values(attrs.a.src).forEach(src => {
+                var source = document.createElement("source");
+                source.src = src;
+                audio.appendChild(source);
+            });
+        }
+        var source = document.createElement("source");
+        source.src = src;
+        video.__source = source;
+        video.updateSource = updateSource;
+        video.appendChild(source);
+        return video;
     }
 
     if (globalVariable.customElements) {
         globalVariable.customElements.define("vraj-player", VrajPlayer);
-        //debugging purpose
-        //document.getElementById("d").outerHTML = renderPlayerContainer().outerHTML;
     }
     return globalVariable;
 });

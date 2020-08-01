@@ -1,5 +1,13 @@
-.player-container:hover .player-overlay,
 .player-not-started .player-overlay,
 .player-not-playing .player-overlay {
     display: block;
+}
+
+@media screen and (min-width:600px) {
+    .player-container:hover .player-overlay {
+        display: block;
+    }
+    .player-container:hover .thumbnail {
+        filter: brightness(50%);
+    }
 }
