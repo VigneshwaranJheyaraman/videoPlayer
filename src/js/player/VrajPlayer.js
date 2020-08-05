@@ -9,7 +9,24 @@
                 playerContainer: null,
                 controls: null,
                 video: null,
-                overlayIcon: null
+                overlayIcon: null,
+                slider: null,
+                duration: null,
+                __currentTime: null,
+                get currentTime() {
+                    return this.__currentTime
+                },
+                set currentTime(time) {
+                    if (this.duration) {
+                        if (time <= 0) {
+                            this.__currentTime = 0;
+                        } else if (time >= this.duration) {
+                            this.__currentTime = this.duration;
+                        } else {
+                            this.__currentTime = time;
+                        }
+                    }
+                }
             },
             player = {
                 get rootEl() {
@@ -40,12 +57,25 @@
                         __player.video.currentTime = __player.video.duration;
                     }
                 },
-                duration: __player.duration
+                get duration() {
+                    return __player.duration;
+                }
             };
 
         //initialize properties of player
         function propsInit(props) {
             player.rootEl = props.rootElement;
+        }
+
+        function seek(e) {
+            if (e.target) {
+                this.currentTime = (parseFloat(e.target.value) / 100) * __player.duration;
+                updateVideoTime.call(this);
+            }
+        }
+
+        function updateVideoTime() {
+            this.video.currentTime = __player.currentTime;
         }
 
         // intialize dom for the player
@@ -61,6 +91,7 @@
             __player.overlayIcon = vrajPlayer.playerOverlayIcon;
             __player.controls = vrajPlayer.controls();
             __player.video = vrajPlayer.video;
+            __player.slider = vrajPlayer.slider;
             unsubscribeEvents();
             subscribeEvents();
         }
@@ -93,7 +124,14 @@
 
         function subscribeEvents() {
             __player.video && __player.video.addEventListener("loadedmetadata", function() {
-                player.duration = __player.video.duration;
+                __player.duration = __player.video.duration;
+            });
+            __player.video && __player.video.addEventListener("timeupdate", function() {
+                __player.currentTime = __player.video.currentTime;
+                __player.slider.value = parseFloat((__player.currentTime / __player.duration).toFixed(2)) * 100;
+            });
+            __player.slider && __player.slider.addEventListener("input", function(e) {
+                seek.call(__player, e);
             });
             if (__player.controls) {
                 Object.values(__player.controls).forEach(control => {

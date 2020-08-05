@@ -1,12 +1,17 @@
 (function(definition) {
     definition(window);
 })(function(globalVariable) {
-    const
+    const PLAYER_ACTIONS = {
+            notStarted: "player-not-started",
+            notPlaying: "player-not-playing"
+        },
         PLAYER_FUNCTIONS = {
             play: function() {
                 //show pause btn
                 this.playerOverlayIcon.pause();
-                this.playerContainer && this.playerContainer.classList.remove("player-not-started");
+                if (this.playerContainer) {
+                    this.playerContainer.classList.remove(PLAYER_ACTIONS.notStarted, PLAYER_ACTIONS.notPlaying);
+                }
                 //hide thumbnail
                 if (this.thumbnailContainer) {
                     this.thumbnailContainer.style.opacity = 0;
@@ -15,6 +20,9 @@
             pause: function() {
                 //show play btn
                 this.playerOverlayIcon.play();
+                if (this.playerContainer) {
+                    this.playerContainer.classList.add(PLAYER_ACTIONS.notPlaying);
+                }
             },
             stop: function() {
                 this.playerOverlayIcon.stop();
@@ -151,6 +159,10 @@
             }
         }
 
+        get slider() {
+            return this.playerContainer;
+        }
+
         //player attr ends here
         get playerContainer() {
             return this.__shadowContainer.querySelector(`#${PLAYER_STYLES.playerContainer.id}`);
@@ -170,6 +182,10 @@
 
         get isSeperateAudio() {
             return this.video && this.video.muted;
+        }
+
+        get slider() {
+            return this.playerContainer && this.playerContainer.__extras.__slider;
         }
 
         init() {
@@ -345,7 +361,9 @@
         var extras = document.createElement("div");
         extras.setAttribute("class", generateClass(PLAYER_STYLES.extras.class));
         extras.appendChild(renderSubtitle());
-        extras.appendChild(renderSlider());
+        var slider = renderSlider();
+        extras.__slider = slider;
+        extras.appendChild(slider);
         extras.appendChild(renderControls.call(this));
         return extras;
     }
