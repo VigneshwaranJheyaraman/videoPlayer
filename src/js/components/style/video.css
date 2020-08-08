@@ -1,5 +1,4 @@
 .player-container video {
     width: 100%;
-    height: calc(99% - (var(--slider-hg) + var(--controls-hg)));
-    z-index: var(--videoIndex);
+    height: calc(var(--playerContainerMinHeight) - (var(--slider-hg) + var(--cc-hg)));
 }

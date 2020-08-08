@@ -27,24 +27,62 @@
 /*extras*/
 
 .player-container .extras {
-    --slider-width: 95%;
-    --slider-thumb-wd: 25px;
-    --slider-border-radius: 5px;
+    --slider-width: 100%;
     top: auto;
     z-index: var(--extrasIndex);
     background-color: pink;
     text-align: center;
+    position: relative;
+    height: calc(var(--cc-hg) + var(--slider-hg));
+    display: flex;
+    flex-direction: column;
+    z-index: var(--extrasIndex);
 }
 
+
+/*Slider*/
+
 .player-container .extras .slider {
-    -webkit-appearance: none;
-    appearance: none;
     width: var(--slider-width);
-    border-radius: var(--slider-border-radius);
     height: var(--slider-hg);
+    margin: auto;
+}
+
+.player-container .extras .video-slider {
+    --seeker-size: 17px;
+    --slider-border-rad: 5px;
+    --seeker-min-size: var(--slider-hg);
+    --progress-init-wd: 0;
+    --buffer-init-wd: 0;
+    --seekerIndex: 3;
+    --progIndex: 2;
+    --buffIndex: 1;
     outline: none;
     background-color: black;
-    margin: auto;
+}
+
+.player-container .extras .video-slider .seeker {
+    width: var(--seeker-min-size);
+    height: var(--seeker-min-size);
+    z-index: var(--seekerIndex);
+    background-color: white;
+    position: absolute;
+    top: auto;
+}
+
+.player-container .extras .video-slider .progress,
+.player-container .extras .video-slider .buffer {
+    width: 0;
+    position: absolute;
+    top: auto;
+}
+
+.player-container .extras .video-slider .progress {
+    z-index: var(--progIndex);
+}
+
+.player-container .extras .video-slider .buffer {
+    z-index: var(--buffIndex);
 }
 
 .player-container .extras .sub {
@@ -53,31 +91,27 @@
     color: black;
     background-color: rgb(124, 124, 124);
     height: auto;
+    word-wrap: break-word;
 }
 
 .player-container .extras .controls {
-    height: var(--controls-hg);
+    height: 0;
     width: 99%;
     background-color: grey;
     margin: auto;
+    overflow: hidden;
     justify-content: space-around;
 }
 
-.player-container .extras .controls .fa {
+.player-container .extras .controls * {
     margin: auto;
 }
 
-
-/*custom slider*/
-
-.player-container .extras .slider::-webkit-slider-thumb,
-.player-container .extras .slider::-moz-range-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: var(--slider-thumb-wd);
-    height: var(--slider-thumb-wd);
-    border-radius: 50%;
-    background-color: yellow;
+.player-container .extras .controls div .vol-slider {
+    outline: none;
+    background-color: transparent;
+    width: 0;
+    overflow: hidden;
 }
 
 

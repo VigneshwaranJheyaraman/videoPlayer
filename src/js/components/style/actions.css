@@ -6,8 +6,28 @@
 @media screen and (min-width:600px) {
     .player-container:hover .player-overlay {
         display: block;
+        background-color: rgba(124, 124, 124, 0.5);
     }
-    .player-container:hover .thumbnail {
-        filter: brightness(50%);
+    .player-container:hover video {
+        height: calc(var(--playerContainerMinHeight) - (var(--controls-hg) + var(--slider-hg) + var(--cc-hg)));
+    }
+    /*extras related actions*/
+    .player-container:hover .extras {
+        height: calc(var(--cc-hg) + var(--slider-hg) + var(--controls-hg));
+    }
+    .player-container:hover .extras .video-slider:hover {
+        border-radius: var(--slider-border-rad);
+    }
+    .player-container .extras .video-slider:hover .seeker {
+        width: var(--seeker-size);
+        height: var(--seeker-size);
+        border-radius: 50%;
+        top: 0;
+    }
+    .player-container:hover .extras .controls {
+        height: var(--controls-hg);
+    }
+    .player-container .extras .controls .sibling-container:hover * {
+        width: 100%;
     }
 }

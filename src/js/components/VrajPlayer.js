@@ -51,10 +51,19 @@
                 class: ["overlay", "thumbnail"]
             },
             extras: {
-                class: ["overlay", "extras"],
+                class: ["extras"],
                 slider: {
                     id: "videoSlider",
-                    class: ["slider"]
+                    class: ["slider", "video-slider"],
+                    seeker: {
+                        class: ["seeker"]
+                    },
+                    progress: {
+                        class: ["slider", "progress"]
+                    },
+                    buffer: {
+                        class: ["slider", "buffer"]
+                    }
                 },
                 cc: {
                     id: "cc",
@@ -78,17 +87,34 @@
                             click: PLAYER_FUNCTIONS.stop
                         },
                         {
+                            class: "fa fa-2x fa-volume-up",
+                            sibling: {
+                                class: ["vol-slider"],
+                                id: "volChangerBtn",
+                                attr: {
+                                    min: 0,
+                                    max: 1,
+                                    step: 0.1
+                                }
+                            }
+                        },
+                        {
                             class: "fa fa-2x fa-window-maximize",
                             id: "fullScreenBtn"
-                        },
+                        }
                     ]
                 }
             },
             video: {
-                class: ["overlay"]
+                class: []
             }
         };
 
+    //Player components properties
+    var playerProperties = {
+        bufferColor: "#ffff00",
+        progressColor: "#f4f4f4"
+    };
     //Defining the Component
     class VrajPlayer extends HTMLElement {
         constructor() {
@@ -188,6 +214,10 @@
             return this.playerContainer && this.playerContainer.__extras.__slider;
         }
 
+        get volumeSlider() {
+            return this.playerContainer && this.playerContainer.__extras.querySelector("#" + PLAYER_STYLES.extras.controls.children[3].sibling.id);
+        }
+
         init() {
             PLAYER_STYLES.cssFiles.forEach(fileName => {
                 this.__shadowContainer.appendChild(renderStyle({ href: `${this.__cssRoot}${fileName}` }));
@@ -235,9 +265,13 @@
         }
 
         controls() {
-            return PLAYER_STYLES.extras.controls.children.map(control => {
+            return PLAYER_STYLES.extras.controls.children.filter(ctrl => ctrl.id).map(control => {
                 return { elem: this.__shadowContainer.getElementById(control.id) }
             });
+        }
+
+        updatePlayerProperties(props) {
+            updatePlayerProperties.call(this.playerContainer, props);
         }
 
     }
@@ -270,12 +304,13 @@
         var thumbnail = renderThumbnail(props.thumbUrl);
         playerContainer.__thumbnail = thumbnail;
         playerContainer.appendChild(thumbnail);
-        var extras = renderExtras.call(this);
-        playerContainer.__extras = extras;
-        playerContainer.appendChild(extras);
         var video = renderVideo(props.video, props.video.src);
         playerContainer.__video = video;
         playerContainer.appendChild(video);
+        var extras = renderExtras.call(this);
+        playerContainer.__extras = extras;
+        updatePlayerProperties.call(playerContainer);
+        playerContainer.appendChild(extras);
         return playerContainer;
     }
 
@@ -328,11 +363,35 @@
 
     function renderExtras() {
         function renderSlider() {
-            var slider = document.createElement("input");
-            slider.setAttribute("type", "range");
+            function renderSeeker() {
+                var seeker = document.createElement("div");
+                seeker.setAttribute("class", generateClass(PLAYER_STYLES.extras.slider.seeker.class));
+                return seeker;
+            }
+
+            function renderBuffer() {
+                var buffer = document.createElement("div");
+                buffer.setAttribute("class", generateClass(PLAYER_STYLES.extras.slider.buffer.class));
+                return buffer;
+            }
+
+            function renderProgress() {
+                var progress = document.createElement("div");
+                progress.setAttribute("class", generateClass(PLAYER_STYLES.extras.slider.progress.class));
+                return progress;
+            }
+            var slider = document.createElement("div");
             slider.setAttribute("id", PLAYER_STYLES.extras.slider.id);
             slider.setAttribute("class", generateClass(PLAYER_STYLES.extras.slider.class));
-            slider.value = 0;
+            var seeker = renderSeeker(),
+                buffer = renderBuffer(),
+                progress = renderProgress();
+            slider.__seeker = seeker;
+            slider.__buffer = buffer;
+            slider.__progress = progress;
+            slider.appendChild(seeker);
+            slider.appendChild(buffer);
+            slider.appendChild(progress);
             return slider;
         }
 
@@ -345,11 +404,25 @@
 
         function renderControls() {
             function renderControlIcons(props) {
+                var parent = document.createElement("div");
+                parent.setAttribute("class", "flex");
                 var icon = document.createElement("i");
                 icon.setAttribute("class", props.class);
-                icon.setAttribute("id", props.id);
+                props.id && icon.setAttribute("id", props.id);
                 props.click && icon.addEventListener("click", props.click.bind(this));
-                return icon;
+                parent.appendChild(icon);
+                if (props.sibling) {
+                    var sibling = document.createElement("input");
+                    parent.classList.add("sibling-container")
+                    sibling.setAttribute("type", "range");
+                    for (var attr in props.sibling.attr) {
+                        sibling.setAttribute(attr, props.sibling.attr[attr]);
+                    }
+                    sibling.setAttribute("class", generateClass(props.sibling.class));
+                    props.sibling.id && sibling.setAttribute("id", props.sibling.id);
+                    parent.appendChild(sibling);
+                }
+                return parent;
             }
             var controls = document.createElement("div");
             controls.setAttribute("class", generateClass(PLAYER_STYLES.extras.controls.class));
@@ -390,6 +463,12 @@
         video.updateSource = updateSource;
         video.appendChild(source);
         return video;
+    }
+
+    function updatePlayerProperties(props = {}) {
+        playerProperties = Object.assign({}, playerProperties, props);
+        this.__extras.__slider.__buffer.style.backgroundColor = playerProperties.bufferColor;
+        this.__extras.__slider.__progress.style.backgroundColor = playerProperties.progressColor;
     }
 
     if (globalVariable.customElements) {
