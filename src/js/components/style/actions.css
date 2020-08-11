@@ -3,6 +3,10 @@
     display: block;
 }
 
+.player-full-screen video {
+    height: calc(100% - (var(--cc-hg) + var(--slider-hg)));
+}
+
 @media screen and (min-width:600px) {
     .player-container:hover .player-overlay {
         display: block;
@@ -10,6 +14,9 @@
     }
     .player-container:hover video {
         height: calc(var(--playerContainerMinHeight) - (var(--controls-hg) + var(--slider-hg) + var(--cc-hg)));
+    }
+    .player-full-screen:hover video {
+        height: calc(100% - (var(--cc-hg) + var(--slider-hg) + var(--controls-hg)));
     }
     /*extras related actions*/
     .player-container:hover .extras {
@@ -22,7 +29,7 @@
         width: var(--seeker-size);
         height: var(--seeker-size);
         border-radius: 50%;
-        top: 0;
+        top: calc(var(--seeker-size)/-4);
     }
     .player-container:hover .extras .controls {
         height: var(--controls-hg);

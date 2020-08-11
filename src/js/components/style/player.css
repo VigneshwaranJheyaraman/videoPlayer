@@ -5,12 +5,13 @@
     --extrasIndex: 3;
     --borderRadius: 15px;
     /*Overlay constant */
-    --cc-hg: 10px;
+    --cc-hg: 0px;
     --slider-hg: 10px;
     --controls-hg: 40px;
     min-height: var(--playerContainerMinHeight);
     position: relative;
     border-radius: var(--borderRadius);
+    background-color: #000;
 }
 
 .player-container,

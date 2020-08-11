@@ -3,7 +3,8 @@
 })(function(globalVariable) {
     const PLAYER_ACTIONS = {
             notStarted: "player-not-started",
-            notPlaying: "player-not-playing"
+            notPlaying: "player-not-playing",
+            fullScreen: "player-full-screen"
         },
         PLAYER_FUNCTIONS = {
             play: function() {
@@ -26,10 +27,20 @@
             },
             stop: function() {
                 this.playerOverlayIcon.stop();
+            },
+            loading: function() {
+                this.playerOverlayIcon.loading();
+            },
+            toggleFullScreen: function(isFullScreen) {
+                if (isFullScreen) {
+                    this.playerContainer && this.playerContainer.classList.add(PLAYER_ACTIONS.fullScreen);
+                } else {
+                    this.playerContainer && this.playerContainer.classList.remove(PLAYER_ACTIONS.fullScreen);
+                }
             }
         },
         PLAYER_STYLES = {
-            cssFiles: ["/player.css", "/overlay.css", "/actions.css", "/video.css"],
+            cssFiles: ["/player.css", "/video.css", "/overlay.css", "/actions.css"],
             playerContainer: {
                 class: ["player-container", "player-not-started"],
                 id: "container"
@@ -43,7 +54,8 @@
                 controls: {
                     play: "play",
                     pause: "pause",
-                    stop: "stop"
+                    stop: "stop",
+                    loading: "loader"
                 }
             },
             thumbnail: {
@@ -185,11 +197,11 @@
             }
         }
 
-        get slider() {
-            return this.playerContainer;
+        //player attr ends here
+        get captions() {
+            return this.playerContainer && this.playerContainer.__captions;
         }
 
-        //player attr ends here
         get playerContainer() {
             return this.__shadowContainer.querySelector(`#${PLAYER_STYLES.playerContainer.id}`);
         }
@@ -264,6 +276,10 @@
             PLAYER_FUNCTIONS.stop.call(this);
         }
 
+        loading() {
+            PLAYER_FUNCTIONS.loading.call(this);
+        }
+
         controls() {
             return PLAYER_STYLES.extras.controls.children.filter(ctrl => ctrl.id).map(control => {
                 return { elem: this.__shadowContainer.getElementById(control.id) }
@@ -272,6 +288,10 @@
 
         updatePlayerProperties(props) {
             updatePlayerProperties.call(this.playerContainer, props);
+        }
+
+        toggleFullScreen(isFullScreen) {
+            PLAYER_FUNCTIONS.toggleFullScreen.call(this, isFullScreen);
         }
 
     }
@@ -307,6 +327,9 @@
         var video = renderVideo(props.video, props.video.src);
         playerContainer.__video = video;
         playerContainer.appendChild(video);
+        var subtitle = renderSubtitle();
+        playerContainer.__captions = subtitle;
+        playerContainer.appendChild(subtitle);
         var extras = renderExtras.call(this);
         playerContainer.__extras = extras;
         updatePlayerProperties.call(playerContainer);
@@ -324,30 +347,40 @@
     }
 
     function renderOverlayIcon() {
+        function removeOtherOverlays(overlayNotToRemove) {
+            for (var ctrl in PLAYER_STYLES.overlayIcon.controls) {
+                if (PLAYER_STYLES.overlayIcon.controls[ctrl] !== overlayNotToRemove) {
+                    this.classList.remove(PLAYER_STYLES.overlayIcon.controls[ctrl]);
+                }
+            }
+        }
+
         function pause() {
-            this.classList.remove(PLAYER_STYLES.overlayIcon.controls.play);
-            this.classList.remove(PLAYER_STYLES.overlayIcon.controls.stop);
+            removeOtherOverlays.call(this, PLAYER_STYLES.overlayIcon.controls.pause);
             this.classList.add(PLAYER_STYLES.overlayIcon.controls.pause);
         }
 
         function play() {
-            this.classList.remove(PLAYER_STYLES.overlayIcon.controls.pause);
-            this.classList.remove(PLAYER_STYLES.overlayIcon.controls.stop);
+            removeOtherOverlays.call(this, PLAYER_STYLES.overlayIcon.controls.play);
             this.classList.add(PLAYER_STYLES.overlayIcon.controls.play);
         }
 
         function stop() {
-            this.classList.remove(PLAYER_STYLES.overlayIcon.controls.play);
-            this.classList.remove(PLAYER_STYLES.overlayIcon.controls.pause);
+            removeOtherOverlays.call(this, PLAYER_STYLES.overlayIcon.controls.stop);
             this.classList.add(PLAYER_STYLES.overlayIcon.controls.stop);
         }
 
+        function loading() {
+            removeOtherOverlays.call(this, PLAYER_STYLES.overlayIcon.controls.loading);
+            this.classList.add(PLAYER_STYLES.overlayIcon.controls.loading);
+        }
         var overlayIcon = document.createElement("div");
         overlayIcon.setAttribute("class", generateClass(PLAYER_STYLES.overlayIcon.class));
         overlayIcon.setAttribute("id", PLAYER_STYLES.overlayIcon.id);
         overlayIcon.play = play.bind(overlayIcon);
         overlayIcon.pause = pause.bind(overlayIcon);
         overlayIcon.stop = stop.bind(overlayIcon);
+        overlayIcon.loading = loading.bind(overlayIcon);
         return overlayIcon;
     }
 
@@ -359,6 +392,13 @@
             thumbnail.style.backgroundImage = `url(${thumbUrl})`;
         }
         return thumbnail;
+    }
+
+    function renderSubtitle() {
+        var subtitle = document.createElement("div");
+        subtitle.setAttribute("id", PLAYER_STYLES.extras.cc.id);
+        subtitle.setAttribute("class", generateClass(PLAYER_STYLES.extras.cc.class));
+        return subtitle;
     }
 
     function renderExtras() {
@@ -395,12 +435,6 @@
             return slider;
         }
 
-        function renderSubtitle() {
-            var subtitle = document.createElement("div");
-            subtitle.setAttribute("id", PLAYER_STYLES.extras.cc.id);
-            subtitle.setAttribute("class", generateClass(PLAYER_STYLES.extras.cc.class));
-            return subtitle;
-        }
 
         function renderControls() {
             function renderControlIcons(props) {
@@ -433,7 +467,7 @@
         }
         var extras = document.createElement("div");
         extras.setAttribute("class", generateClass(PLAYER_STYLES.extras.class));
-        extras.appendChild(renderSubtitle());
+        var subtitle = renderSubtitle();
         var slider = renderSlider();
         extras.__slider = slider;
         extras.appendChild(slider);
