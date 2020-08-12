@@ -129,7 +129,7 @@
                     return this.booleanize(document.fullscreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullScreenElement || document.fullscreenElement);
                 },
                 checkFullScreenPossible: function() {
-                    return this.booleanize(document.fullccreenEnabled || document.mozFullScreenEnabled || document.msFullScreenEnabled || document.webkitFullScreenEnabled || document.webkitSupportsFullScreen || document.createElement("video").requestFullScreen);
+                    return this.booleanize(document.fullscreenEnabled || document.mozFullScreenEnabled || document.msFullScreenEnabled || document.webkitFullScreenEnabled || document.webkitSupportsFullScreen || document.createElement("video").requestFullScreen);
                 },
                 checkVideoPlayable: function() {
                     return this.booleanize(document.createElement("video").canPlayType);
@@ -214,6 +214,7 @@
                 playerContainer: null,
                 controls: null,
                 video: null,
+                audio: null,
                 overlayIcon: null,
                 slider: null,
                 captions: null,
@@ -455,11 +456,13 @@
         function play() {
             this.container && this.container.play();
             this.video && this.video.play();
+            this.audio && this.audio.play();
         }
 
         function pause() {
             this.container && this.container.pause();
             this.video && this.video.pause();
+            this.audio && this.audio.pause();
         }
 
         function seek(e) {
@@ -482,6 +485,9 @@
             if (this.video) {
                 this.video.currentTime = this.duration;
             }
+            if (this.audio) {
+                this.audio.currentTime = this.duration;
+            }
             this.container && this.container.pause();
         }
 
@@ -500,12 +506,17 @@
 
         function updateCaptionsUI() {
             if (this.captions && this.subtitleHandler) {
-                this.captions.innerHTML = this.subtitleHandler.currentSubtitle;
+                this.captions.innerText = this.subtitleHandler.currentSubtitle;
             }
         }
 
         function updateVideoTime() {
-            this.video.currentTime = __player.currentTime;
+            if (this.video) {
+                this.video.currentTime = __player.currentTime;
+            }
+            if (this.audio) {
+                this.audio.currentTime = __player.currentTime;
+            }
             player.play();
         }
 
@@ -513,6 +524,9 @@
             if (e.target) {
                 this.mediaController.volume = e.target.value;
                 this.video.volume = this.mediaController.volume;
+                if (this.audio) {
+                    this.audio.volume = this.mediaController.volume;
+                }
             }
         }
 
@@ -531,6 +545,7 @@
             if (props.thumbnail) {
                 vrajPlayer.setAttribute("thumbnail", props.thumbnail);
                 vrajPlayer.setAttribute("prc", props.video);
+                vrajPlayer.setAttribute("arc", props.audio);
             }
             __player.container = vrajPlayer;
             __player.rootElem && __player.rootElem.append(vrajPlayer);
@@ -541,6 +556,7 @@
             __player.slider = vrajPlayer.slider;
             __player.volumeChanger = vrajPlayer.volumeSlider;
             __player.captions = vrajPlayer.captions;
+            __player.audio = vrajPlayer.audio;
             __player.fullScreenHandler = __fullScreenHandler.init(__player.playerContainer);
             __player.subtitleHandler = __subtitleHandler.init({
                 video: __player.video,
@@ -556,13 +572,20 @@
             this.duration = this.video.duration;
             if (this.volumeChanger) {
                 var lastVolume = this.storageHandler.storage.lastVolume;
-                this.volumeChanger.value = lastVolume;
-                this.video.volume = lastVolume;
+                if (lastVolume) {
+                    this.volumeChanger.value = lastVolume;
+                    this.video.volume = lastVolume;
+                }
             }
             if (this.video) {
                 var lastPlayed = this.storageHandler.storage.lastPlayed;
-                this.video.currentTime = lastPlayed;
-                this.currentTime = lastPlayed;
+                if (lastPlayed) {
+                    this.video.currentTime = lastPlayed;
+                    this.currentTime = lastPlayed;
+                    if (this.audio) {
+                        this.audio.currentTime = lastPlayed;
+                    }
+                }
             }
         };
         PlayerEvents.prototype.updateTime = function() {
@@ -579,12 +602,23 @@
         PlayerEvents.prototype.videoWaiting = function() {
             if (this.video.readyState < 2) {
                 this.container.loading();
+                this.audio && this.audio.play();
+            } else if (this.video.readyState === 4) {
+                play.call(this);
             }
         };
         PlayerEvents.prototype.onPlaying = function() {
             if (!this.video.paused) {
                 this.container.play();
             }
+            if (this.audio && Math.floor(this.currentTime) !== Math.floor(this.audio.currentTime)) {
+                pause.call(this);
+                this.audio.currentTime = this.currentTime;
+                play.call(this);
+            }
+        };
+        PlayerEvents.prototype.videoError = function() {
+            pause.call(this);
         };
         PlayerEvents.prototype.toggleFullScreen = function() {
             this.fullScreenHandler.toggleFullScreen();
@@ -622,6 +656,8 @@
                 __player.eventsHandler.addNewEvent(__player.video, "progress", PlayerEvents.prototype.progressVideo.bind(__player));
                 __player.eventsHandler.addNewEvent(__player.video, "waiting", PlayerEvents.prototype.videoWaiting.bind(__player));
                 __player.eventsHandler.addNewEvent(__player.video, "playing", PlayerEvents.prototype.onPlaying.bind(__player));
+                __player.eventsHandler.addNewEvent(__player.video, "error", PlayerEvents.prototype.videoError.bind(__player));
+                __player.eventsHandler.addNewEvent(__player.audio, "error", PlayerEvents.prototype.videoError.bind(__player));
             }
 
             function removeEvents() {
@@ -630,6 +666,8 @@
                 __player.eventsHandler.removeEvent(__player.video, "progress", PlayerEvents.prototype.progressVideo.bind(__player));
                 __player.eventsHandler.removeEvent(__player.video, "waiting", PlayerEvents.prototype.videoWaiting.bind(__player));
                 __player.eventsHandler.removeEvent(__player.video, "playing", PlayerEvents.prototype.onPlaying.bind(__player));
+                __player.eventsHandler.addNewEvent(__player.video, "error", PlayerEvents.prototype.videoError.bind(__player));
+                __player.eventsHandler.addNewEvent(__player.audio, "error", PlayerEvents.prototype.videoError.bind(__player));
             }
             if (__player.video) {
                 return removeEvent ? removeEvents : initEvents;

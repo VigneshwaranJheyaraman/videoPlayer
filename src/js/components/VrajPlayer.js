@@ -4,7 +4,10 @@
     const PLAYER_ACTIONS = {
             notStarted: "player-not-started",
             notPlaying: "player-not-playing",
-            fullScreen: "player-full-screen"
+            fullScreen: "player-full-screen",
+            captionsEnabled: "caption-enabled",
+            hideCaption: "caption-hide",
+            hide: "hide"
         },
         PLAYER_FUNCTIONS = {
             play: function() {
@@ -36,6 +39,26 @@
                     this.playerContainer && this.playerContainer.classList.add(PLAYER_ACTIONS.fullScreen);
                 } else {
                     this.playerContainer && this.playerContainer.classList.remove(PLAYER_ACTIONS.fullScreen);
+                }
+            },
+            enableCaption: function(e) {
+                var isCaptionEnabled = e.target.classList.contains(PLAYER_ACTIONS.captionsEnabled);
+                if (this.playerContainer) {
+                    var cc = this.playerContainer.querySelector("#" + PLAYER_STYLES.extras.controls.children[3].id);
+                    isCaptionEnabled = cc ? cc.classList.contains(PLAYER_ACTIONS.captionsEnabled) : isCaptionEnabled;
+                    if (!isCaptionEnabled) {
+                        if (cc) {
+                            cc.classList.add(PLAYER_ACTIONS.captionsEnabled);
+                            cc.classList.remove(PLAYER_ACTIONS.hideCaption);
+                            this.captions && this.captions.classList.remove(PLAYER_ACTIONS.hide);
+                        }
+                    } else {
+                        if (cc) {
+                            cc.classList.add(PLAYER_ACTIONS.hideCaption);
+                            cc.classList.remove(PLAYER_ACTIONS.captionsEnabled);
+                            this.captions && this.captions.classList.add(PLAYER_ACTIONS.hide);
+                        }
+                    }
                 }
             }
         },
@@ -79,7 +102,7 @@
                 },
                 cc: {
                     id: "cc",
-                    class: ["sub"]
+                    class: ["sub", "hide"]
                 },
                 controls: {
                     class: ["flex", "controls"],
@@ -97,6 +120,11 @@
                             class: "fa fa-2x fa-stop",
                             id: "stopBtn",
                             click: PLAYER_FUNCTIONS.stop
+                        },
+                        {
+                            class: "fa fa-2x fa-cc",
+                            id: "captionsBtn",
+                            click: PLAYER_FUNCTIONS.enableCaption
                         },
                         {
                             class: "fa fa-2x fa-volume-up",
@@ -119,19 +147,23 @@
             },
             video: {
                 class: []
+            },
+            audio: {
+                class: ["hide"]
             }
         };
 
     //Player components properties
     var playerProperties = {
-        bufferColor: "#ffff00",
-        progressColor: "#f4f4f4"
-    };
+            bufferColor: "#ffff00",
+            progressColor: "#f4f4f4"
+        },
+        __shadowContainer;
     //Defining the Component
     class VrajPlayer extends HTMLElement {
         constructor() {
             super();
-            this.__shadowContainer = this.attachShadow({ mode: 'closed' });
+            __shadowContainer = this.attachShadow({ mode: 'closed' });
             this.__cssRoot = "../js/components/style";
             this.init = this.init.bind(this);
             this.play = this.play.bind(this);
@@ -147,12 +179,17 @@
             this.init();
             //init overlayIcon callback
             initOverlayIconEvents.call(this);
+            //update video muted if audio exists
+            if (this.audio) {
+                this.video.muted = true;
+            }
         }
 
         static get attr() {
             return {
                 thumbnail: "thumbnail",
-                player_src: "prc"
+                player_src: "prc",
+                audio_src: "arc"
             };
         }
 
@@ -167,6 +204,15 @@
                         this.thumbnail = newValue;
                     }
                     break;
+                case VrajPlayer.attr.player_src:
+                    if (oldValue !== newValue) {
+                        this.prc = newValue;
+                    }
+                    break;
+                case VrajPlayer.attr.audio_src:
+                    if (oldValue !== newValue) {
+                        this.arc = newValue;
+                    }
             }
         }
 
@@ -192,18 +238,47 @@
 
         set prc(newSrc) {
             if (newSrc && newSrc.length && newSrc !== "undefined") {
-                this.setAttribute(VrajPlayer.attr.player_src, newSrc);
-                this.video.updateSource.call(this, newSrc);
+                this.playerContainer && this.video && this.video.updateSource.call(this, this.video, newSrc);
+            }
+        }
+
+        get arc() {
+            return this.getAttribute(VrajPlayer.attr.audio_src);
+        }
+
+        set arc(newSrc) {
+            if (newSrc && newSrc.length && newSrc != "undefined") {
+                this.setAttribute(VrajPlayer.attr.audio_src, newSrc);
+                if (this.playerContainer) {
+                    if (this.audio) {
+                        this.audio.updateSource.call(this, this.audio, newSrc);
+                    } else {
+                        var audio = renderAudio(newSrc);
+                        this.playerContainer.__audio = audio;
+                        this.playerContainer.appendChild(audio);
+                    }
+                }
+            } else {
+                if (this.playerContainer) {
+                    this.audio && this.audio.remove();
+                    if (this.video) {
+                        this.video.muted = false;
+                    }
+                }
             }
         }
 
         //player attr ends here
+        get audio() {
+            return this.playerContainer && this.playerContainer.__audio;
+        }
+
         get captions() {
             return this.playerContainer && this.playerContainer.__captions;
         }
 
         get playerContainer() {
-            return this.__shadowContainer.querySelector(`#${PLAYER_STYLES.playerContainer.id}`);
+            return __shadowContainer.querySelector(`#${PLAYER_STYLES.playerContainer.id}`);
         }
 
         get thumbnailContainer() {
@@ -218,35 +293,33 @@
             return this.playerContainer.__video;
         }
 
-        get isSeperateAudio() {
-            return this.video && this.video.muted;
-        }
-
         get slider() {
             return this.playerContainer && this.playerContainer.__extras.__slider;
         }
 
         get volumeSlider() {
-            return this.playerContainer && this.playerContainer.__extras.querySelector("#" + PLAYER_STYLES.extras.controls.children[3].sibling.id);
+            return this.playerContainer && this.playerContainer.__extras.querySelector("#" + PLAYER_STYLES.extras.controls.children[4].sibling.id);
         }
 
         init() {
             PLAYER_STYLES.cssFiles.forEach(fileName => {
-                this.__shadowContainer.appendChild(renderStyle({ href: `${this.__cssRoot}${fileName}` }));
+                __shadowContainer.appendChild(renderStyle({ href: `${this.__cssRoot}${fileName}` }));
             });
             //fwa css
-            this.__shadowContainer.appendChild(renderStyle({
+            __shadowContainer.appendChild(renderStyle({
                 href: "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
                 integrity: "sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN",
                 crossorigin: "anonymous"
             }));
 
-            this.__shadowContainer.appendChild(
+            __shadowContainer.appendChild(
                 renderPlayerContainer.call(this, {
                     thumbUrl: this.thumbnail,
                     video: {
                         src: this.prc ? this.prc : "#",
-
+                    },
+                    audio: {
+                        src: this.arc
                     }
                 })
             );
@@ -282,7 +355,7 @@
 
         controls() {
             return PLAYER_STYLES.extras.controls.children.filter(ctrl => ctrl.id).map(control => {
-                return { elem: this.__shadowContainer.getElementById(control.id) }
+                return { elem: __shadowContainer.getElementById(control.id) }
             });
         }
 
@@ -324,7 +397,7 @@
         var thumbnail = renderThumbnail(props.thumbUrl);
         playerContainer.__thumbnail = thumbnail;
         playerContainer.appendChild(thumbnail);
-        var video = renderVideo(props.video, props.video.src);
+        var video = renderVideo(props.video.src);
         playerContainer.__video = video;
         playerContainer.appendChild(video);
         var subtitle = renderSubtitle();
@@ -334,6 +407,11 @@
         playerContainer.__extras = extras;
         updatePlayerProperties.call(playerContainer);
         playerContainer.appendChild(extras);
+        if (props.audio && props.audio.src) {
+            var audio = renderAudio(props.audio.src);
+            playerContainer.__audio = audio;
+            playerContainer.appendChild(audio);
+        }
         return playerContainer;
     }
 
@@ -475,28 +553,51 @@
         return extras;
     }
 
-    function renderVideo(attrs = {}, src = "#") {
-        function updateSource(newSrc) {
-            this.video.__source.src = newSrc;
-        }
+    function renderVideo(src = "#") {
+
         var video = document.createElement("video");
         video.setAttribute("class", generateClass(PLAYER_STYLES.video.class));
-        if (attrs.a && attrs.a.src) {
-            video.muted = true;
-            var audio = document.createElement("audio");
-            video.__audio = audio;
-            Object.values(attrs.a.src).forEach(src => {
-                var source = document.createElement("source");
-                source.src = src;
-                audio.appendChild(source);
-            });
-        }
-        var source = document.createElement("source");
-        source.src = src;
-        video.__source = source;
+        renderSource(video, src);
         video.updateSource = updateSource;
-        video.appendChild(source);
         return video;
+    }
+
+    function renderAudio(src = "#") {
+        var audio = document.createElement("audio");
+        audio.setAttribute("class", generateClass(PLAYER_STYLES.audio.class));
+        renderSource(audio, src, false);
+        audio.updateSource = updateSource;
+        return audio;
+    }
+
+    /* components functions */
+
+    function updateSource(elem, newSrc) {
+        if (elem && elem.__source.length) {
+            elem.__source.forEach(srcElem => {
+                srcElem.remove && srcElem.remove();
+            });
+            renderSource(elem, newSrc);
+        }
+    }
+
+    function renderSource(elem, src, isVideo = true) {
+        const SRC_SPLITTER = ",",
+            TYPE_SPLITTER = ";";
+        var srcList = src.split(SRC_SPLITTER);
+        elem.__source = [];
+        srcList.forEach(videoSrcType => {
+            var videoSrc = videoSrcType.split(TYPE_SPLITTER)[0];
+            var videoType = isVideo ? "video/mp4" : "audio/mp3";
+            if (videoSrcType.indexOf(";") !== -1) {
+                videoType = videoSrcType.split(TYPE_SPLITTER).reverse()[0];
+            }
+            var source = document.createElement("source");
+            source.src = videoSrc;
+            source.type = videoType;
+            elem.__source.push(source);
+            elem.appendChild(source);
+        });
     }
 
     function updatePlayerProperties(props = {}) {

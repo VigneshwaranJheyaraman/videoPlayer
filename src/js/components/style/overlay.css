@@ -65,7 +65,7 @@
     width: var(--seeker-min-size);
     height: var(--seeker-min-size);
     z-index: var(--seekerIndex);
-    background-color: white;
+    background-color: red;
     position: absolute;
     top: auto;
 }
@@ -96,9 +96,8 @@
 
 .player-container .extras .controls {
     height: 0;
-    width: 99%;
+    width: 100%;
     background-color: grey;
-    margin: auto;
     overflow: hidden;
     justify-content: space-around;
 }
@@ -112,6 +111,15 @@
     background-color: transparent;
     width: 0;
     overflow: hidden;
+}
+
+.player-container .extras .controls div .caption-enabled {
+    --enabledBorder: 2px;
+    border-top: var(--enabledBorder) solid yellow;
+}
+
+.player-container .extras .controls div .caption-hide {
+    border-top: unset;
 }
 
 

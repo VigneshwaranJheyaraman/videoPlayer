@@ -1,3 +1,7 @@
+.player-container .hide {
+    display: none;
+}
+
 .player-not-started .player-overlay,
 .player-not-playing .player-overlay {
     display: block;
