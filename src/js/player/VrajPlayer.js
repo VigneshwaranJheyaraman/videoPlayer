@@ -163,7 +163,9 @@
                     }
                 },
                 isMobile: function() {
-                    return this.rootEl && this.rootEl.offsetWidth <= this.__mobileWidth;
+                    let check = false;
+                    (function(a) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
+                    return check;
                 },
                 toggleFullScreen: function() {
                     if (this.__isFullScreen) {
@@ -208,6 +210,181 @@
                     };
                 }
             },
+            __timeContainer = {
+                duration: null,
+                currentTime: null,
+                generateTimeString: function(timeInS) {
+                    if (timeInS) {
+                        var minute = Math.floor(timeInS / 60),
+                            remaningSec = Math.round(timeInS - (minute * 60)),
+                            hr = Math.floor(minute / 60);
+                        if (minute >= 60) {
+                            hr += 1;
+                            minute = 0;
+                        }
+                        return { hr, minute, sec: remaningSec };
+                    } else { return { hr: 0, minute: 0, sec: 0 } }
+                },
+                parseToTimeString: function({ hr, minute, sec }) {
+                    minute = minute < 10 ? "0" + minute : minute;
+                    sec = sec < 10 ? "0" + sec : sec;
+                    return hr > 0 ? (hr < 10 ? "0" + hr : hr + ":" + minute + ":" + sec) : minute + ":" + sec;
+                },
+                generateRunningTime: function() {
+                    return (
+                        this.parseToTimeString(this.generateTimeString(this.currentTime)) +
+                        "/" +
+                        this.parseToTimeString(this.generateTimeString(this.duration))
+                    );
+                },
+                init: function(props) {
+                    this.currentTime = props.currentTime ? props.currentTime : 0;
+                    this.duration = props.duration;
+                    var ctx = this;
+                    return {
+                        get stringify() {
+                            return ctx.generateRunningTime.call(ctx);
+                        },
+                        get time() {
+                            return ctx.generateTimeString.call(ctx, ctx.currentTime);
+                        },
+                        get totalTime() {
+                            return ctx.generateTimeString.call(ctx, ctx.duration);
+                        },
+                        set time(newTime) {
+                            if (newTime) {
+                                ctx.currentTime = newTime;
+                            }
+                        }
+                    }
+                }
+            },
+            __gestureHandler = {
+                rootEl: null,
+                eventHandler: EventHandler(),
+                startPos: {
+                    x: 0,
+                    y: 0
+                },
+                distance: {
+                    x: 0,
+                    y: 0
+                },
+                directionsCB: {
+                    left: null,
+                    right: null,
+                    top: null,
+                    bottom: null
+                },
+                swipeDirection: null,
+                thresholdDistance: 150,
+                restraint: 100,
+                maxSwipeTime: 300,
+                totalSwipeTime: null,
+                swipeStartTime: null,
+                initTouchPoints: function(eve) {
+                    var touchObj = eve.changedTouches && eve.changedTouches.length && eve.changedTouches[0];
+                    if (touchObj) {
+                        this.swipeDirection = null;
+                        this.distance = { x: 0, y: 0 };
+                        this.startPos.x = touchObj.pageX;
+                        this.startPos.y = touchObj.pageY;
+                        this.swipeStartTime = Date.now();
+                    }
+                },
+                touchMoveHandler: function(eve) {
+                    eve.preventDefault();
+                },
+                touchEndHandler: function(eve) {
+                    var touchObj = eve.changedTouches && eve.changedTouches.length && eve.changedTouches[0];
+                    if (touchObj) {
+                        this.distance.x = touchObj.pageX - this.startPos.x;
+                        this.distance.y = touchObj.pageY - this.startPos.y;
+                        this.totalSwipeTime = Date.now() - this.swipeStartTime;
+                        if (this.totalSwipeTime <= this.maxSwipeTime) {
+                            if (
+                                Math.abs(this.distance.x) >= this.thresholdDistance &&
+                                Math.abs(this.distance.y) <= this.restraint
+                            ) {
+                                if (this.distance.x < 0) {
+                                    this.__directionHandler.left.call(this);
+                                } else {
+                                    this.__directionHandler.right.call(this);
+                                }
+                            }
+                        } else if (
+                            Math.abs(this.distance.y) >= this.thresholdDistance &&
+                            Math.abs(this.distance.x) <= this.restraint
+                        ) {
+                            if (this.distance.y < 0) {
+                                this.__directionHandler.top.call(this);
+                            } else {
+                                this.__directionHandler.bottom.call(this);
+                            }
+                        }
+                    }
+                },
+                __directionHandler: {
+                    left: function() {
+                        this.swipeDirection = "L";
+                        // console.log("left");
+                        this.directionsCB.left && this.directionsCB.left();
+                    },
+                    right: function() {
+                        this.swipeDirection = "R";
+                        // console.log("right");
+                        this.directionsCB.right && this.directionsCB.right();
+                    },
+                    top: function() {
+                        this.swipeDirection = "T";
+                        // console.log("up");
+                        this.directionsCB.top && this.directionsCB.top();
+                    },
+                    bottom: function() {
+                        this.swipeDirection = "B";
+                        // console.log("down");
+                        this.directionsCB.bottom && this.directionsCB.bottom();
+                    }
+                },
+                init: function(props) {
+                    this.rootEl = props.rootEl;
+                    this.directionsCB = props.directionsCB ? props.directionsCB : this.directionsCB;
+                    var ctx = this;
+                    return {
+                        get x() {
+                            return ctx.distance.x;
+                        },
+                        get y() {
+                            return ctx.distance.y;
+                        },
+                        get directionsCB() {
+                            ctx.directionsCB;
+                        },
+                        set directionsCB(directionsCB) {
+                            if (JSON.stringify(directionsCB) !== JSON.stringify({})) {
+                                ctx.directionsCB = directionsCB;
+                            }
+                        },
+                        get events() {
+                            ctx.eventHandler.events;
+                        },
+                        subscribe: function() {
+                            if (this.rootEl) {
+                                this.eventHandler.addNewEvent(this.rootEl, "touchstart", this.initTouchPoints.bind(this));
+                                this.eventHandler.addNewEvent(this.rootEl, "touchmove", this.touchMoveHandler.bind(this));
+                                this.eventHandler.addNewEvent(this.rootEl, "touchend", this.touchEndHandler.bind(this));
+                            }
+                        }.bind(ctx),
+                        unsubscribe: function() {
+                            if (this.rootEl) {
+                                this.eventHandler.removeEvent(this.rootEl, "touchstart", this.initTouchPoints.bind(this));
+                                this.eventHandler.removeEvent(this.rootEl, "touchmove", this.touchMoveHandler.bind(this));
+                                this.eventHandler.removeEvent(this.rootEl, "touchend", this.touchEndHandler.bind(this));
+                            }
+                        }.bind(ctx)
+                    };
+                }
+            },
             __player = {
                 container: null,
                 rootElem: document.body,
@@ -219,8 +396,11 @@
                 slider: null,
                 captions: null,
                 volumeChanger: null,
+                timeHandler: null,
+                timeContainer: null,
                 __eventsHandler: EventHandler(),
                 storageHandler: new PlayerStorage(),
+                guesterHandler: null,
                 subtitleHandler: null,
                 fullScreenHandler: null,
                 duration: null,
@@ -455,14 +635,27 @@
 
         function play() {
             this.container && this.container.play();
-            this.video && this.video.play();
-            this.audio && this.audio.play();
+            var playPromise = this.video && this.video.play();
+            if (playPromise) {
+                playPromise.then(() => {
+                    this.audio && this.audio.play();
+                }).catch(err => {
+                    pause.call(this);
+                });
+            }
         }
 
         function pause() {
             this.container && this.container.pause();
-            this.video && this.video.pause();
-            this.audio && this.audio.pause();
+            var pausePromise = this.video && this.video.pause();
+            if (pausePromise) {
+                pausePromise.then(() => {
+                    this.audio && this.audio.pause();
+                }).catch(err => {
+                    console.log(err);
+                    this.audio && this.audio.pause();
+                });
+            }
         }
 
         function seek(e) {
@@ -470,6 +663,7 @@
                 if (this.mediaController.isDragging) {
                     this.mediaController.currentLeft = e.pageX - this.mediaController.offset.left;
                     this.currentTime = (this.mediaController.currentLeft / 100) * this.duration;
+                    updateTimeDetails.call(this);
                     updatePlayerSliderUI.call(this);
                 }
             }
@@ -537,6 +731,13 @@
                 this.slider.__progress.style.width = `${this.mediaController.currentLeft}%`;
             }
         }
+
+        function updateTimeDetails() {
+            if (this.timeContainer) {
+                this.timeHandler.time = this.currentTime;
+                this.timeContainer.innerHTML = this.timeHandler.stringify;
+            }
+        }
         //Player functions ends here
 
         // intialize dom for the player
@@ -557,6 +758,7 @@
             __player.volumeChanger = vrajPlayer.volumeSlider;
             __player.captions = vrajPlayer.captions;
             __player.audio = vrajPlayer.audio;
+            __player.timeContainer = vrajPlayer.timeContainer;
             __player.fullScreenHandler = __fullScreenHandler.init(__player.playerContainer);
             __player.subtitleHandler = __subtitleHandler.init({
                 video: __player.video,
@@ -570,6 +772,7 @@
         function PlayerEvents() {};
         PlayerEvents.prototype.loadVideo = function() {
             this.duration = this.video.duration;
+            //load last loaded time from storage
             if (this.volumeChanger) {
                 var lastVolume = this.storageHandler.storage.lastVolume;
                 if (lastVolume) {
@@ -587,12 +790,23 @@
                     }
                 }
             }
+            //time handler to show time data      
+            this.timeHandler = __timeContainer.init({
+                duration: this.duration
+            });
+            this.guesterHandler = __gestureHandler.init({
+                rootEl: this.playerContainer
+            });
+            if (__player.fullScreenHandler.isMobile) {
+                this.guesterHandler.subscribe();
+            }
         };
         PlayerEvents.prototype.updateTime = function() {
             if (this.video.currentTime === this.duration) {
                 stop.call(this);
             }
             this.currentTime = this.video.currentTime;
+            updateTimeDetails.call(this);
             updatePlayerSliderUI.call(this);
         };
         PlayerEvents.prototype.progressVideo = function() {
@@ -600,9 +814,9 @@
             this.slider.__buffer.style.width = `${getBufferWidth.call(this)}%`;
         };
         PlayerEvents.prototype.videoWaiting = function() {
+            this.container.loading();
             if (this.video.readyState < 2) {
-                this.container.loading();
-                this.audio && this.audio.play();
+                this.audio && this.audio.pause();
             } else if (this.video.readyState === 4) {
                 play.call(this);
             }
@@ -620,6 +834,13 @@
         PlayerEvents.prototype.videoError = function() {
             pause.call(this);
         };
+        PlayerEvents.prototype.audioError = function(e) {
+            this.audio = null;
+            pause.call(this);
+            if (this.video) {
+                this.video.muted = false;
+            }
+        }
         PlayerEvents.prototype.toggleFullScreen = function() {
             this.fullScreenHandler.toggleFullScreen();
             this.container.toggleFullScreen(this.fullScreenHandler.isFullScreen);
@@ -657,7 +878,7 @@
                 __player.eventsHandler.addNewEvent(__player.video, "waiting", PlayerEvents.prototype.videoWaiting.bind(__player));
                 __player.eventsHandler.addNewEvent(__player.video, "playing", PlayerEvents.prototype.onPlaying.bind(__player));
                 __player.eventsHandler.addNewEvent(__player.video, "error", PlayerEvents.prototype.videoError.bind(__player));
-                __player.eventsHandler.addNewEvent(__player.audio, "error", PlayerEvents.prototype.videoError.bind(__player));
+                __player.audio && __player.eventsHandler.addNewEvent(__player.audio, "error", PlayerEvents.prototype.audioError.bind(__player));
             }
 
             function removeEvents() {
@@ -667,7 +888,7 @@
                 __player.eventsHandler.removeEvent(__player.video, "waiting", PlayerEvents.prototype.videoWaiting.bind(__player));
                 __player.eventsHandler.removeEvent(__player.video, "playing", PlayerEvents.prototype.onPlaying.bind(__player));
                 __player.eventsHandler.addNewEvent(__player.video, "error", PlayerEvents.prototype.videoError.bind(__player));
-                __player.eventsHandler.addNewEvent(__player.audio, "error", PlayerEvents.prototype.videoError.bind(__player));
+                __player.audio && __player.eventsHandler.addNewEvent(__player.audio, "error", PlayerEvents.prototype.audioError.bind(__player));
             }
             if (__player.video) {
                 return removeEvent ? removeEvents : initEvents;
@@ -779,6 +1000,7 @@
                 lastPlayed: __player.currentTime !== __player.duration ? __player.currentTime : 0,
                 lastVolume: __player.video.volume
             });
+            __player.guesterHandler && __player.guesterHandler.unsubscribe();
         }
 
         //Subscribe all events

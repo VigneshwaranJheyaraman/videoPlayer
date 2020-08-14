@@ -44,7 +44,7 @@
             enableCaption: function(e) {
                 var isCaptionEnabled = e.target.classList.contains(PLAYER_ACTIONS.captionsEnabled);
                 if (this.playerContainer) {
-                    var cc = this.playerContainer.querySelector("#" + PLAYER_STYLES.extras.controls.children[3].id);
+                    var cc = this.playerContainer.querySelector("#" + PLAYER_STYLES.extras.controls.children.cc.id);
                     isCaptionEnabled = cc ? cc.classList.contains(PLAYER_ACTIONS.captionsEnabled) : isCaptionEnabled;
                     if (!isCaptionEnabled) {
                         if (cc) {
@@ -106,27 +106,32 @@
                 },
                 controls: {
                     class: ["flex", "controls"],
-                    children: [{
+                    children: {
+                        play: {
                             class: "fa fa-2x fa-play",
                             id: "playBtn",
                             click: PLAYER_FUNCTIONS.play
                         },
-                        {
+                        pause: {
                             class: "fa fa-2x fa-pause",
                             id: "pauseBtn",
                             click: PLAYER_FUNCTIONS.pause
                         },
-                        {
+                        stop: {
                             class: "fa fa-2x fa-stop",
                             id: "stopBtn",
                             click: PLAYER_FUNCTIONS.stop
                         },
-                        {
+                        time: {
+                            class: "fa-2x",
+                            id: "timeContainer"
+                        },
+                        cc: {
                             class: "fa fa-2x fa-cc",
                             id: "captionsBtn",
                             click: PLAYER_FUNCTIONS.enableCaption
                         },
-                        {
+                        volume: {
                             class: "fa fa-2x fa-volume-up",
                             sibling: {
                                 class: ["vol-slider"],
@@ -138,11 +143,11 @@
                                 }
                             }
                         },
-                        {
+                        fullScreen: {
                             class: "fa fa-2x fa-window-maximize",
                             id: "fullScreenBtn"
                         }
-                    ]
+                    }
                 }
             },
             video: {
@@ -247,7 +252,7 @@
         }
 
         set arc(newSrc) {
-            if (newSrc && newSrc.length && newSrc != "undefined") {
+            if (newSrc && newSrc.length && newSrc !== "undefined") {
                 this.setAttribute(VrajPlayer.attr.audio_src, newSrc);
                 if (this.playerContainer) {
                     if (this.audio) {
@@ -265,6 +270,7 @@
                         this.video.muted = false;
                     }
                 }
+                this.removeAttribute(VrajPlayer.attr.audio_src);
             }
         }
 
@@ -298,13 +304,19 @@
         }
 
         get volumeSlider() {
-            return this.playerContainer && this.playerContainer.__extras.querySelector("#" + PLAYER_STYLES.extras.controls.children[4].sibling.id);
+            return this.playerContainer && this.playerContainer.__extras.querySelector("#" + PLAYER_STYLES.extras.controls.children.volume.sibling.id);
+        }
+
+        get timeContainer() {
+            return this.playerContainer && this.playerContainer.__extras.querySelector("#" + PLAYER_STYLES.extras.controls.children.time.id);
         }
 
         init() {
             PLAYER_STYLES.cssFiles.forEach(fileName => {
                 __shadowContainer.appendChild(renderStyle({ href: `${this.__cssRoot}${fileName}` }));
             });
+            //viewport implementation
+            __shadowContainer.appendChild(renderViewPort());
             //fwa css
             __shadowContainer.appendChild(renderStyle({
                 href: "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
@@ -354,7 +366,7 @@
         }
 
         controls() {
-            return PLAYER_STYLES.extras.controls.children.filter(ctrl => ctrl.id).map(control => {
+            return Object.values(PLAYER_STYLES.extras.controls.children).filter(ctrl => ctrl.id).map(control => {
                 return { elem: __shadowContainer.getElementById(control.id) }
             });
         }
@@ -375,6 +387,13 @@
 
     function initOverlayIconEvents() {
         this.playerOverlayIcon && this.playerOverlayIcon.addEventListener("click", this.togglePlayPause);
+    }
+
+    function renderViewPort() {
+        var meta = document.createElement("meta");
+        meta.name = "viewport";
+        meta.content = "width=device-width, intial-scale=1.0";
+        return meta;
     }
 
     function renderStyle(props) {
@@ -408,7 +427,7 @@
         updatePlayerProperties.call(playerContainer);
         playerContainer.appendChild(extras);
         if (props.audio && props.audio.src) {
-            var audio = renderAudio(props.audio.src);
+            var audio = renderAudio.call(this, props.audio.src);
             playerContainer.__audio = audio;
             playerContainer.appendChild(audio);
         }
@@ -538,7 +557,7 @@
             }
             var controls = document.createElement("div");
             controls.setAttribute("class", generateClass(PLAYER_STYLES.extras.controls.class));
-            PLAYER_STYLES.extras.controls.children.forEach(child => {
+            Object.values(PLAYER_STYLES.extras.controls.children).forEach(child => {
                 controls.appendChild(renderControlIcons.call(this, child));
             });
             return controls;
@@ -565,7 +584,7 @@
     function renderAudio(src = "#") {
         var audio = document.createElement("audio");
         audio.setAttribute("class", generateClass(PLAYER_STYLES.audio.class));
-        renderSource(audio, src, false);
+        renderSource.call(this, audio, src, false);
         audio.updateSource = updateSource;
         return audio;
     }
@@ -595,6 +614,15 @@
             var source = document.createElement("source");
             source.src = videoSrc;
             source.type = videoType;
+            source.onerror = function(e) {
+                elem.remove();
+                if (this.playerContainer) {
+                    this.playerContainer.__audio = null;
+                    if (this.video && this.video.muted) {
+                        this.video.muted = false;
+                    }
+                }
+            }.bind(this);
             elem.__source.push(source);
             elem.appendChild(source);
         });

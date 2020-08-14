@@ -11,6 +11,10 @@
     justify-content: center;
 }
 
+.player-container .hide {
+    display: none !important;
+}
+
 
 /*thumbnail*/
 
@@ -19,7 +23,7 @@
     height: 100%;
     z-index: var(--thumbnailIndex);
     background-size: 100% 100%;
-    background-color: transparent;
+    background-color: #000;
     border-radius: var(--borderRadius);
 }
 
@@ -33,7 +37,7 @@
     background-color: pink;
     text-align: center;
     position: relative;
-    height: calc(var(--cc-hg) + var(--slider-hg));
+    height: var(--extras-mini-hg);
     display: flex;
     flex-direction: column;
 }
@@ -91,6 +95,9 @@
     color: black;
     background-color: rgb(124, 124, 124);
     height: auto;
+    position: absolute;
+    bottom: var(--extras-mini-hg);
+    width: 100%;
     word-wrap: break-word;
 }
 

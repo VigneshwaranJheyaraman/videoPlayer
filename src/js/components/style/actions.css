@@ -1,15 +1,33 @@
-.player-container .hide {
-    display: none;
-}
-
 .player-not-started .player-overlay,
 .player-not-playing .player-overlay {
     display: block;
 }
 
+
+/*Full screen updates*/
+
 .player-full-screen video {
-    height: calc(100% - (var(--cc-hg) + var(--slider-hg)));
+    height: calc(100% - var(--extras-hg)) !important;
 }
+
+.player-full-screen .extras .controls {
+    height: var(--controls-hg);
+}
+
+.player-full-screen .extras {
+    height: var(--extras-hg) !important;
+}
+
+.player-full-screen .sub {
+    bottom: var(--extras-hg);
+}
+
+.player-full-screen .fa-2x {
+    font-size: 1em;
+}
+
+
+/*Full screen updates ends here*/
 
 @media screen and (min-width:600px) {
     .player-container:hover .player-overlay {
@@ -17,14 +35,11 @@
         background-color: rgba(124, 124, 124, 0.5);
     }
     .player-container:hover video {
-        height: calc(var(--playerContainerMinHeight) - (var(--controls-hg) + var(--slider-hg) + var(--cc-hg)));
-    }
-    .player-full-screen:hover video {
-        height: calc(100% - (var(--cc-hg) + var(--slider-hg) + var(--controls-hg)));
+        height: calc(var(--playerContainerMinHeight) - var(--extras-hg));
     }
     /*extras related actions*/
     .player-container:hover .extras {
-        height: calc(var(--cc-hg) + var(--slider-hg) + var(--controls-hg));
+        height: calc(var(--extras-hg)) !important;
     }
     .player-container:hover .extras .video-slider:hover {
         border-radius: var(--slider-border-rad);
@@ -38,7 +53,13 @@
     .player-container:hover .extras .controls {
         height: var(--controls-hg);
     }
+    .player-container:hover .sub {
+        bottom: var(--extras-hg);
+    }
     .player-container .extras .controls .sibling-container:hover * {
         width: 100%;
+    }
+    .player-container .fa-2x {
+        font-size: 2em;
     }
 }

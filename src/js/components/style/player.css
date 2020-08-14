@@ -8,6 +8,8 @@
     --cc-hg: 0px;
     --slider-hg: 10px;
     --controls-hg: 40px;
+    --extras-hg: calc(var(--cc-hg) + var(--slider-hg) + var(--controls-hg));
+    --extras-mini-hg: calc(var(--cc-hg) + var(--slider-hg));
     min-height: var(--playerContainerMinHeight);
     position: relative;
     border-radius: var(--borderRadius);
