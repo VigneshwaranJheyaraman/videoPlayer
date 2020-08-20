@@ -93,7 +93,7 @@
         var __mediaController = {
                 isDragging: false,
                 __currentLeft: null,
-                __currentTime: null,
+                __currentTime: 0,
                 bufferedTime: null,
                 volume: 1,
                 offset: {
@@ -142,7 +142,6 @@
                             else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
                             else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
                             else if (document.msExitFullscreen) document.msExitFullscreen();
-                            this.updateFullScreenState();
                         } catch (err) {
                             console.error("Error exiting full screen ", err);
                         }
@@ -156,7 +155,6 @@
                             else if (this.rootEl.mozRequestFullScreen) this.rootEl.mozRequestFullScreen();
                             else if (this.rootEl.webkitRequestFullScreen) this.rootEl.webkitRequestFullScreen();
                             else if (this.rootEl.msRequestFullscreen) this.rootEl.msRequestFullscreen();
-                            this.updateFullScreenState();
                         } catch (err) {
                             console.error("Error going full screen", err);
                         }
@@ -174,6 +172,7 @@
                         this.goFullScreen();
                     }
                     this.__isFullScreen = !this.__isFullScreen;
+                    this.updateFullScreenState();
                 },
                 updateFullScreenState: function() {
                     const FULL_SCREEN_ATTR = "fs",
@@ -366,7 +365,7 @@
                             }
                         },
                         get events() {
-                            ctx.eventHandler.events;
+                            return ctx.eventHandler.events;
                         },
                         subscribe: function() {
                             if (this.rootEl) {
@@ -638,7 +637,9 @@
             var playPromise = this.video && this.video.play();
             if (playPromise) {
                 playPromise.then(() => {
-                    this.audio && this.audio.play();
+                    if (!this.video.paused) {
+                        this.audio && this.audio.play();
+                    }
                 }).catch(err => {
                     pause.call(this);
                 });
@@ -648,13 +649,10 @@
         function pause() {
             this.container && this.container.pause();
             var pausePromise = this.video && this.video.pause();
-            if (pausePromise) {
-                pausePromise.then(() => {
-                    this.audio && this.audio.pause();
-                }).catch(err => {
-                    console.log(err);
-                    this.audio && this.audio.pause();
-                });
+            try {
+                this.audio && this.audio.pause();
+            } catch (err) {
+                console.error(err);
             }
         }
 
@@ -797,8 +795,8 @@
             this.guesterHandler = __gestureHandler.init({
                 rootEl: this.playerContainer
             });
-            if (__player.fullScreenHandler.isMobile) {
-                this.guesterHandler.subscribe();
+            if (this.fullScreenHandler.isMobile) {
+                initMobileEvents()();
             }
         };
         PlayerEvents.prototype.updateTime = function() {
@@ -858,11 +856,17 @@
                 if (__player.playerContainer) {
                     __player.eventsHandler.addNewEvent(__player.playerContainer, "click", PlayerEvents.prototype.togglePlayPause.bind(__player));
                 }
+                if (__player.fullScreenHandler.isMobile) {
+                    __player.guesterHandler.subscribe();
+                }
             }
 
             function removeEvents() {
                 if (__player.playerContainer) {
                     __player.eventsHandler.removeEvent(__player.playerContainer, "click", PlayerEvents.prototype.togglePlayPause.bind(__player));
+                }
+                if (__player.fullScreenHandler.isMobile) {
+                    __player.guesterHandler.unsubscribe();
                 }
             }
             if (__player.playerContainer) {
@@ -986,11 +990,11 @@
             initControlsEvents(true)();
             initOverlayEvents(true)();
             initSeekingEvents(true)();
-            if (__player.fullScreenHandler.isMobile) {
+            if (__plqyer.fullScreenHandler && __player.fullScreenHandler.isMobile) {
                 initMobileEvents(true)();
             }
             window.removeEventListener("resize", function() {
-                if (window.outerWidth <= __fullScreenHandler.__mobileWidth) {
+                if (__player.fullScreenHandler && __player.fullScreenHandler.isMobile) {
                     initMobileEvents()();
                 } else {
                     initMobileEvents(true)();
@@ -1009,11 +1013,8 @@
             initControlsEvents()();
             initOverlayEvents()();
             initSeekingEvents()();
-            if (__player.fullScreenHandler.isMobile) {
-                initMobileEvents()();
-            }
             window.addEventListener("resize", function() {
-                if (window.innerWidth <= __fullScreenHandler.__mobileWidth) {
+                if (__player.fullScreenHandler && __player.fullScreenHandler.isMobile) {
                     initMobileEvents()();
                 } else {
                     initMobileEvents(true)();

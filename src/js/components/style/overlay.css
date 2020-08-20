@@ -96,6 +96,7 @@
     background-color: rgb(124, 124, 124);
     height: auto;
     position: absolute;
+    font-size: 1.5em !important;
     bottom: var(--extras-mini-hg);
     width: 100%;
     word-wrap: break-word;
@@ -138,6 +139,7 @@
     --bord-wd: calc(var(--icon-wd) / 2);
     border-radius: var(--borderRadius);
     --bord-hg: calc(var(--icon-hg) / 2);
+    --icon-color: black;
     display: none;
     width: 100%;
     height: 100%;
@@ -158,18 +160,18 @@
 
 .player-container .player-overlay .play {
     border-width: var(--bord-wd) 0 var(--bord-wd) var(--icon-wd);
-    border-color: transparent transparent transparent black;
+    border-color: transparent transparent transparent var(--icon-color);
 }
 
 .player-container .player-overlay .pause {
     border-width: 0 0 0 var(--bord-wd);
-    border-color: transparent transparent transparent black;
+    border-color: transparent transparent transparent var(--icon-color);
     border-style: double;
 }
 
 .player-container .player-overlay .stop {
     border-width: var(--bord-wd);
-    border-color: black;
+    border-color: var(--icon-color);
     border-style: solid;
 }
 
