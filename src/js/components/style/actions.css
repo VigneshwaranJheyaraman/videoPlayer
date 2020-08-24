@@ -3,7 +3,7 @@
     display: block;
 }
 
-@media screen and (min-width:600px) and (orientation:potrait) {
+@media screen and (min-width:600px) {
     .player-container:hover .player-overlay {
         display: block;
         background-color: rgba(124, 124, 124, 0.5);
@@ -40,7 +40,7 @@
 
 @media screen and (orientation:landscape) {
     .player-container video {
-        height: calc(100% - var(--extras-hg)) !important;
+        height: calc(var(--playerContainerMinHeight) - var(--extras-hg)) !important;
     }
     .player-container .extras .controls {
         height: var(--controls-hg);

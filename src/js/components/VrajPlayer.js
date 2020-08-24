@@ -169,7 +169,7 @@
         constructor() {
             super();
             __shadowContainer = this.attachShadow({ mode: 'closed' });
-            this.__cssRoot = "../js/components/style";
+            this.__cssRoot = "./js/components/style";
             this.init = this.init.bind(this);
             this.play = this.play.bind(this);
             this.pause = this.pause.bind(this);
@@ -597,6 +597,7 @@
                 srcElem.remove && srcElem.remove();
             });
             renderSource(elem, newSrc);
+            elem.load();
         }
     }
 
