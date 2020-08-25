@@ -284,7 +284,7 @@
                     swipeDirection: null,
                     thresholdDistance: 150,
                     restraint: 100,
-                    maxSwipeTime: 300,
+                    maxSwipeTime: Infinity,
                     totalSwipeTime: null,
                     swipeStartTime: null,
                     initTouchPoints: function(eve) {
@@ -332,22 +332,22 @@
                     __directionHandler: {
                         left: function() {
                             this.swipeDirection = "L";
-                            // console.log("left");
+                            console.log("left", this.distance.x);
                             this.directionsCB.left && this.directionsCB.left();
                         },
                         right: function() {
                             this.swipeDirection = "R";
-                            // console.log("right");
+                            console.log("right", this.distance.x);
                             this.directionsCB.right && this.directionsCB.right();
                         },
                         top: function() {
                             this.swipeDirection = "T";
-                            // console.log("up");
+                            console.log("up");
                             this.directionsCB.top && this.directionsCB.top();
                         },
                         bottom: function() {
                             this.swipeDirection = "B";
-                            // console.log("down");
+                            console.log("down");
                             this.directionsCB.bottom && this.directionsCB.bottom();
                         }
                     },
@@ -465,15 +465,17 @@
                             };
                         }
                     },
-                    fetchSubtitle: function() {
+                    fetchSubtitle: function(cb = {}) {
                         if (this.url) {
                             fetch(this.url, {
                                 method: "GET"
                             }).then(response => {
                                 if (/20[0-9]/.test(response.status)) {
                                     //successfull response
+                                    cb.s && cb.s();
                                     return response.text();
                                 } else {
+                                    cb.f && cb.f();
                                     throw new Error("No response from the specified URL " + this.url);
                                 }
                             }).then(textResponse => {
@@ -481,7 +483,8 @@
                                 this.subtitleResponseParser();
                                 this.updateSynchronizerDB();
                             }).catch(err => {
-                                console.log(err);
+                                // console.log(err);
+                                cb.f && cb.f();
                                 throw new Error("Error processing the request " + err);
                             });
                         }
@@ -516,7 +519,7 @@
                     },
                     init: function(props) {
                         this.url = props.url;
-                        this.fetchSubtitle();
+                        this.fetchSubtitle({ s: props.sCB, f: props.fCB });
                         this.subtitleOrganizer = __synchronizer.init({
                             video: props.video,
                             db: this.subtitleDictionary,
@@ -571,9 +574,6 @@
                                 if (JSON.stringify(newDictionary) !== JSON.stringify({})) {
                                     ctx.subtitleDictionary = newDictionary;
                                 }
-                            },
-                            get subtitleAvailable() {
-                                return JSON.stringify(this.subtitleDictionary) != JSON.stringify({})
                             }
                         };
                     },
@@ -636,6 +636,16 @@
             }
             //Media controller functions ends
 
+            function enableOrDisableCaption(enableIt = true) {
+                var captionBtn = this.controls.filter(ctrl => ctrl.name === "captionsBtn");
+                captionBtn = captionBtn.length ? captionBtn[0].elem : null;
+                if (enableIt) {
+                    this.container.disableTarget(captionBtn, false);
+                } else {
+                    this.container.disableTarget(captionBtn);
+                }
+            }
+
             //Player functions
 
             function getBufferWidth() {
@@ -643,16 +653,20 @@
                 return parseFloat((buffWidth <= 0 || buffWidth === Infinity ? 0 : buffWidth >= 100 ? 100 : buffWidth).toFixed(2));
             }
 
+            function isPlaying() {
+                return this.currentTime > 0 && !this.video.paused && !this.video.ended && this.video.readyState > 2;
+            }
+
             function play() {
                 this.container && this.container.play();
                 var playPromise = this.video && this.video.play();
                 if (playPromise) {
                     playPromise.then(() => {
-                        if (!this.video.paused) {
+                        if (isPlaying.call(this)) {
                             this.audio && this.audio.play();
                         }
                     }).catch(err => {
-                        pause.call(this);
+                        isPlaying.call(this) && pause.call(this);
                     });
                 }
             }
@@ -709,14 +723,7 @@
 
             function updateCaptionsUI() {
                 if (this.captions && this.subtitleHandler) {
-                    if (this.subtitleHandler.subtitleAvailable) {
-                        this.captions.innerText = this.subtitleHandler.currentSubtitle;
-                        if (this.captions.disabled) {
-                            this.captions.disabled = false;
-                        }
-                    } else {
-                        this.captions.disabled = true;
-                    }
+                    this.captions.innerText = this.subtitleHandler.currentSubtitle;
                 }
             }
 
@@ -808,7 +815,11 @@
             __player.subtitleHandler = __subtitleHandler.init({
                 video: __player.video,
                 url: props.subtitleURL,
-                uiCB: updateCaptionsUI.bind(__player)
+                uiCB: updateCaptionsUI.bind(__player),
+                sCB: enableOrDisableCaption.bind(__player),
+                fCB:() => {
+                    enableOrDisableCaption.call(__player, false);
+                }
             });
             subscribeEvents();
             window.addEventListener("unload", unsubscribeEvents);
@@ -874,8 +885,10 @@
             }
             if (this.audio && Math.floor(this.currentTime) !== Math.floor(this.audio.currentTime)) {
                 pause.call(this);
-                this.audio.currentTime = this.currentTime;
-                play.call(this);
+                this.audio.currentTime = this.currentTime ? this.currentTime : 0;
+                if(isPlaying.call(this)){
+                    play.call(this);
+                }
             }
         };
         PlayerEvents.prototype.videoError = function() {
@@ -902,18 +915,16 @@
 
         function initMobileEvents(removeEvent = false) {
             function initEvents() {
-                if (__player.playerContainer) {
-                    __player.eventsHandler.addNewEvent(__player.playerContainer, "click", PlayerEvents.prototype.togglePlayPause.bind(__player));
-                }
                 if (__player.fullScreenHandler.isMobile) {
                     __player.guesterHandler.subscribe();
                 }
             }
 
             function removeEvents() {
+                /* 
                 if (__player.playerContainer) {
                     __player.eventsHandler.removeEvent(__player.playerContainer, "click", PlayerEvents.prototype.togglePlayPause.bind(__player));
-                }
+                } */
                 if (__player.fullScreenHandler.isMobile) {
                     __player.guesterHandler.unsubscribe();
                 }
