@@ -609,7 +609,8 @@
                 },
                 get fullScreenHandler() {
                     return Object.assign({}, __player.fullScreenHandler);
-                }
+                },
+                updateProperties: changePlayerProps
             };
 
         //initialize properties of player
@@ -738,14 +739,24 @@
         }
         //Player functions ends here
 
+        //change the player properties
+        function changePlayerProps(props = {}, player = undefined) {
+            if (!player) {
+                player = __player.container;
+            }
+            if (player) {
+                props.thumbnail && player.setAttribute("thumbnail", props.thumbnail);
+                props.video && player.setAttribute("prc", props.video);
+                props.audio && player.setAttribute("arc", props.audio);
+            } else {
+                throw new Error("No Player initialized");
+            }
+        }
+
         // intialize dom for the player
         function domInit(props) {
             var vrajPlayer = document.createElement("vraj-player");
-            if (props.thumbnail) {
-                vrajPlayer.setAttribute("thumbnail", props.thumbnail);
-                vrajPlayer.setAttribute("prc", props.video);
-                vrajPlayer.setAttribute("arc", props.audio);
-            }
+            changePlayerProps(props, vrajPlayer);
             __player.container = vrajPlayer;
             __player.rootElem && __player.rootElem.append(vrajPlayer);
             __player.playerContainer = vrajPlayer.playerContainer;
