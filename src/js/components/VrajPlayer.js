@@ -7,7 +7,8 @@
             fullScreen: "player-full-screen",
             captionsEnabled: "caption-enabled",
             hideCaption: "caption-hide",
-            hide: "hide"
+            hide: "hide",
+            disable: "disabled"
         },
         PLAYER_FUNCTIONS = {
             play: function() {
@@ -59,6 +60,11 @@
                             this.captions && this.captions.classList.add(PLAYER_ACTIONS.hide);
                         }
                     }
+                }
+            },
+            disableCaption: function(elem, disabledTarget) {
+                if (elem) {
+                    disabledTarget ? elem.classList.add(PLAYER_ACTIONS.disable) : elem.classList.remove(PLAYER_ACTIONS.disable);
                 }
             }
         },
@@ -169,7 +175,7 @@
         constructor() {
             super();
             __shadowContainer = this.attachShadow({ mode: 'closed' });
-            this.__cssRoot = "../js/components/style";
+            this.__cssRoot = "./js/components/style";
             this.init = this.init.bind(this);
             this.play = this.play.bind(this);
             this.pause = this.pause.bind(this);
@@ -367,7 +373,7 @@
 
         controls() {
             return Object.values(PLAYER_STYLES.extras.controls.children).filter(ctrl => ctrl.id).map(control => {
-                return { elem: __shadowContainer.getElementById(control.id) }
+                return { elem: __shadowContainer.getElementById(control.id), name: control.id }
             });
         }
 
@@ -377,6 +383,10 @@
 
         toggleFullScreen(isFullScreen) {
             PLAYER_FUNCTIONS.toggleFullScreen.call(this, isFullScreen);
+        }
+
+        disableTarget(target, disableTarget = true) {
+            PLAYER_FUNCTIONS.disableCaption(target, disableTarget);
         }
 
     }
@@ -597,6 +607,7 @@
                 srcElem.remove && srcElem.remove();
             });
             renderSource(elem, newSrc);
+            elem.load();
         }
     }
 
